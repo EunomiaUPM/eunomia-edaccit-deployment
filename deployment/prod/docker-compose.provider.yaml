@@ -36,16 +36,16 @@ services:
     image: "postgres"
     restart: always
     env_file:
-      - ./../../static/environment/envs/provider.db.env
+      - ./../../static/envs/provider.db.env
     ports:
-      - "1400:5432"
+      - "1300:5432"
 
   provider-redis:
     image: redis:alpine
     restart: always
     container_name: provider-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     command: >
       redis-server
       --requirepass ds_core_provider_redis
@@ -57,7 +57,7 @@ services:
   provider-setup:
     container_name: provider-setup
     image: rmenendez8/rainbow:v1.2.6
-    command: ["setup", "-e", "/app/static/environment/config/prod/core.provider.yaml"]
+    command: ["setup", "-e", "/app/static/config/core.provider.yaml"]
     volumes:
       - ./../../static/config/provider/prod:/app/static/config
       - ./../../static/specs/agent:/app/static/specs
@@ -68,7 +68,7 @@ services:
       - provider-vault
       - provider-redis
     env_file:
-      - ./../../static/environment/envs/core.provider.env.example
+      - ./../../static/envs/prod/provider.env
     restart: "no"
 
   # =========================
@@ -79,9 +79,9 @@ services:
     build:
       context: ../..
       dockerfile: deployment/Dockerfile
-    command: ["start", "-e", "/app/static/environment/config/prod/core.provider.yaml"]
+    command: ["start", "-e", "/app/static/config/core.provider.yaml"]
     ports:
-      - "1200:1200"
+      - "1100:1100"
     volumes:
       - ./../../static/config/provider/prod:/app/static/config
       - ./../../static/specs/agent:/app/static/specs
@@ -97,6 +97,6 @@ services:
       provider-redis:
         condition: service_started
     env_file:
-      - ./../../static/environment/envs/core.provider.env.example
+      - ./../../static/envs/core.provider.env
     environment:
       RUST_BACKTRACE: full

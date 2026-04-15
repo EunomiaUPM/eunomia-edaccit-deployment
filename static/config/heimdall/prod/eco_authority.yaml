@@ -3,7 +3,7 @@
 # ==========================
 http_host: &http_host
   protocol: 'https'
-  url: 'dev-datapaces.dit.upm.es'
+  url: 'your_domain'
   port: null
   internal_port: '1500'
 
@@ -35,10 +35,10 @@ wallet_config:
   id: null
 
 did_config:
-  did: 'did:web:dev-datapaces.dit.upm.es'
+  did: 'did:web:your_domain'
   type: Web
   did_web_options:
-    domain: 'dev-datapaces.dit.upm.es'
+    domain: 'your_domain'
     path: null
 
 role: EcoAuthority
@@ -53,7 +53,7 @@ vc_config:
 
 issue_config:
   ds_config:
-    dataspace_id: 'HeimdallDataspace'
+    dataspace_id: 'change_me'
   clh_config:
     label_level: 'SC'
     engine_version: '2.11.0'
@@ -62,6 +62,6 @@ issue_config:
 
 verify_req_config:
   is_cert_allowed: true
-  vcs_requested: [ 'gx:VatId','gx:LegalPerson','gx:TermsAndConditions' ]
+  vcs_requested: ['gx:VatId', 'gx:LegalPerson', 'gx:TermsAndConditions']
 
 is_react: true
