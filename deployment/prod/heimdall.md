@@ -114,7 +114,7 @@ Edit `/static/config/heimdall/prod/basic_dataspace_authority.yaml`:
 Start only Vault, Keycloak and their databases. Heimdall and the proxy are not started yet — they depend on configuration obtained in the next steps.
 
 ```bash
-docker compose -f docker-compose.heimdall.yml up heimdall-vault keycloak keycloak_postgres heimdall-db -d
+docker compose -f docker-compose.heimdall.yaml up heimdall-vault keycloak keycloak_postgres heimdall-db -d
 ```
 
 Wait a few seconds for all services to be ready before proceeding.
@@ -312,7 +312,7 @@ openssl rand -base64 32
 With all environment files complete, start all services:
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yaml up -d
 ```
 
 All services should now be running. Visit `https://your.domain.com/admin/home` — you should be redirected to the Keycloak login page.

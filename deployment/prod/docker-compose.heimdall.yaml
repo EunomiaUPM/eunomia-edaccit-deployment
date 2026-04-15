@@ -55,7 +55,7 @@ services:
     command:
       - setup
       - --env-file
-      - /app/static/environment/config/eco_authority.yaml
+      - /app/static/config/eco_authority.yaml
     restart: "no"
 
   heimdall:
@@ -69,13 +69,13 @@ services:
       heimdall-setup:
         condition: service_completed_successfully
     env_file:
-      - ./static/environment/envs/heimdall.env
+      - ./../../static/envs/heimdall/heimdall.env
     environment:
       RUST_BACKTRACE: 1
     command:
       - start
       - --env-file
-      - /app/static/environment/config/eco_authority.yaml
+      - /app/static/config/eco_authority.yaml
 
   keycloak:
     container_name: keycloak
@@ -108,7 +108,7 @@ services:
     ports:
       - "443:4180"
     volumes:
-      - ./../../vault/config:/certs:ro
+      - ./../../vault/heimdall/config:/certs:ro
       - ./../../static/react/proxy-templates:/templates:ro
     env_file:
       - ./../../static/envs/heimdall/proxy.env
