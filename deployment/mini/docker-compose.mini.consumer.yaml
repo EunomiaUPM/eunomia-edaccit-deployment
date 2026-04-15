@@ -1,0 +1,67 @@
+name: mini-consumer
+
+services:
+  consumer-db:
+    container_name: "consumer-db"
+    image: "postgres"
+    restart: always
+    env_file:
+      - ./../../static/envs/consumer/db.env.example
+    ports:
+      - "1300:5432"
+
+  consumer-redis:
+    image: redis:alpine
+    restart: always
+    container_name: consumer-redis
+    ports:
+      - "6380:6379"
+    command: >
+      redis-server 
+      --requirepass ds_core_consumer_redis
+      --user admin on >ds_core_consumer_redis ~* +@all
+
+  # =========================
+  # Setup job (one-shot)
+  # =========================
+  consumer-setup:
+    container_name: consumer-setup
+    image: rmenendez8/rainbow:v1.2.6
+    command: ["setup", "-e", "/app/static/config/mini.consumer.yaml"]
+    volumes:
+      - ./../../static/config/consumer/mini:/app/static/config
+      - ./../../static/specs/agent:/app/static/specs
+      - ./../../static/policy_templates:/app/static/policy_templates
+      - ./../../vault/consumer:/app/vault
+    depends_on:
+      - consumer-db
+      - consumer-redis
+    env_file:
+      - ./../../static/envs/consumer/core.env.example
+    restart: "no"
+
+  # =========================
+  # Main service
+  # =========================
+  consumer:
+    container_name: consumer
+    image: rmenendez8/rainbow:v1.2.6
+    command: ["start", "-e", "/app/static/config/mini.consumer.yaml"]
+    ports:
+      - "1100:1100"
+    volumes:
+      - ./../../static/config/consumer/mini:/app/static/config
+      - ./../../static/specs/agent:/app/static/specs
+      - ./../../static/policy_templates:/app/static/policy_templates
+      - ./../../vault/consumer:/app/vault
+    depends_on:
+      consumer-setup:
+        condition: service_completed_successfully
+      consumer-db:
+        condition: service_started
+      consumer-redis:
+        condition: service_started
+    env_file:
+      - ./../../static/envs/consumer/core.env.example
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

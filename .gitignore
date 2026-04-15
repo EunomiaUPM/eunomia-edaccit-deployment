@@ -1,76 +1,10 @@
-# --- Sistema Operativo ---
-.DS_Store
-Thumbs.db
-ehthumbs.db
-Icon?
-Desktop.ini
-$RECYCLE.BIN/
+vault/**
+!vault/**/
+!vault/**/*.example
+!vault/**/*.gitkeep
 
-# --- Editor / IDE ---
-# VS Code
-.vscode/
-.history/
-.code-workspace
+cert.json.example
+public_key.json.example
+private_key.json.example
 
-# JetBrains IDEs (IntelliJ, RustRover, WebStorm, PyCharm, etc.)
-.idea/
-*.iml
-
-# --- Node.js ---
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-
-# --- Python ---
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.pyc
-.env
-.venv/
-venv/
-pip-log.txt
-
-# --- Rust ---
-/target/
-**/*.rs.bk
-Cargo.lock
-
-# --- Git ---
-*.orig
-*.patch
-*.rej
-
-# --- Logs y bases de datos temporales ---
-*.log
-*.sqlite
-*.sqlite3
-*.db
-
-# --- Build system ---
-build/
-dist/
-out/
-coverage/
-*.egg-info/
-.eggs/
-
-# --- Docker ---
-*.pid
-docker-compose.override.yml
-
-# --- Otros ---
-*.swp
-*.swo
-*.bak
-*.tmp
-*.temp
-
-# --- Mac/Linux swap files ---
-*~
+*.ps1

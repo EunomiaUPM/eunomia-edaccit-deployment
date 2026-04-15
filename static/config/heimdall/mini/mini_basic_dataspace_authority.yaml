@@ -1,0 +1,63 @@
+# ==========================
+# COMMON ANCHORS
+# ==========================
+http_host: &http_host
+  protocol: 'http'
+  url: 'host.docker.internal'
+  port: '1500'
+  internal_port: null
+
+# ==========================
+# CONFIG
+# ==========================
+
+hosts_config:
+  http: *http_host
+  grpc: null
+  graphql: null
+
+connection_config:
+  is_local: true
+  is_prod: false
+  is_vault_real: false
+  has_tls_proxy: false
+
+db_config:
+  db_type: Postgres
+  url: 'heimdall-db'
+  port: '5432'
+
+wallet_config:
+  api:
+    protocol: 'http'
+    url: 'host.docker.internal'
+    port: '7001'
+  id: null
+
+did_config:
+  did: 'did:jwk:...'
+  type: Jwk
+  did_web_options: null
+  #    domain: "CHANGE_ME"
+  #    path: null
+
+role: DataSpaceAuthority
+
+api_config:
+  version: 'v1'
+  openapi_path: '/app/static/specs/openapi/openapi.json'
+
+vc_config:
+  vc_model: JwtVc
+  w3c_data_model: V2
+
+issue_config:
+  ds_config:
+    dataspace_id: 'RainbowDataspace'
+  clh_config: null
+
+verify_req_config:
+  is_cert_allowed: true
+  vcs_requested: []
+
+is_react: true

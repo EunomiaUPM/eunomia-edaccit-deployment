@@ -1,0 +1,67 @@
+name: mini-provider
+
+services:
+  provider-db:
+    container_name: "provider-db"
+    image: "postgres"
+    restart: always
+    env_file:
+      - ./../../static/envs/provider/db.env.example
+    ports:
+      - "1400:5432"
+
+  provider-redis:
+    image: redis:alpine
+    restart: always
+    container_name: provider-redis
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server 
+      --requirepass ds_core_provider_redis
+      --user admin on >ds_core_provider_redis ~* +@all
+
+  # =========================
+  # Setup job (one-shot)
+  # =========================
+  provider-setup:
+    container_name: provider-setup
+    image: rmenendez8/rainbow:v1.2.6
+    command: ["setup", "-e", "/app/static/config/mini.provider.yaml"]
+    volumes:
+      - ./../../static/config/provider/mini:/app/static/config
+      - ./../../static/specs/agent:/app/static/specs
+      - ./../../static/policy_templates:/app/static/policy_templates
+      - ./../../vault/provider:/app/vault
+    depends_on:
+      - provider-db
+      - provider-redis
+    env_file:
+      - ./../../static/envs/provider/core.env.example
+    restart: "no"
+
+  # =========================
+  # Main service
+  # =========================
+  provider:
+    container_name: provider
+    image: rmenendez8/rainbow:v1.2.6
+    command: ["start", "-e", "/app/static/config/mini.provider.yaml"]
+    ports:
+      - "1200:1200"
+    volumes:
+      - ./../../static/config/provider/mini:/app/static/config
+      - ./../../static/specs/agent:/app/static/specs
+      - ./../../static/policy_templates:/app/static/policy_templates
+      - ./../../vault/provider:/app/vault
+    depends_on:
+      provider-setup:
+        condition: service_completed_successfully
+      provider-db:
+        condition: service_started
+      provider-redis:
+        condition: service_started
+    env_file:
+      - ./../../static/envs/provider/core.env.example
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

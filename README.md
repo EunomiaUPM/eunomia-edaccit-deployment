@@ -1,8 +1,6 @@
-# **Rainbow Deployment**
+# **Eunomia Deployment**
 
-![Rainbow front](./static/rainbow.png)
-
-This repository contains artifacts and scripts to deploy and test the Rainbow framework. It includes example certificates for authority, provider, and consumer, a central docker-compose file, and automation scripts in Bash or Powershell.
+This repository contains artifacts and scripts to deploy and test the Eunomia framework. It includes example certificates for authority, provider, and consumer, a central docker-compose file, and automation scripts in Bash or Powershell.
 
 ## **Repository Contents**
 
@@ -11,13 +9,22 @@ This repository contains artifacts and scripts to deploy and test the Rainbow fr
     - `cert.pem`, `private_key.pem`, `public_key.pem`
   - `provider/` — Provider certificate.
   - `consumer/` — Consumer certificate.
-- `deployment/docker-compose.core.yaml` — Main Docker Compose file for the core deployment.
+- `deployment/` — Deployment configurations for different environments.
+  - `mini/` — Lightweight deployment environment tests.
+  - `prod/` — Production deployment environment.
 - `scripts/bash/` — Automation scripts (setup, onboarding, start, stop).
   - `auto-setup.sh` — Initial environment preparation.
   - `auto-onboarding.sh` — Scripts for automatic entity onboarding.
   - `auto-start.sh` — Service startup.
   - `auto-stop.sh` — Service shutdown.
 - `test-cases/` — Test cases (definition and implementation).
+
+## **Deployment Methods**
+
+There are two main ways to deploy this environment:
+
+1. **[Mini Deployment](./deployment/mini/README.md)**: A lightweight deployment using Docker Compose. Click the link to see the specific guide.
+2. **[Prod Deployment](./deployment/prod/README.md)**: Production deployment (currently empty/WIP).
 
 ## **Requirements**
 
@@ -26,26 +33,7 @@ This repository contains artifacts and scripts to deploy and test the Rainbow fr
 
 ## **External Dependencies**
 
-This project depends on walt.id as the entire authentication layer is based on the SSI paradigm. For this, it is important to download and deploy this docker-compose: https://github.com/walt-id/waltid-identity
-
-```bash
-git clone https://github.com/walt-id/waltid-identity.git
-cd waltid-identity
-cd docker-compose
-```
-
-If you are Linux user. Please, before running containers make sure they are able to communicate with `host.docker.internal`. For doing so, just go in the current `./waltid-identity/docker-compose` folder into `.env` and change SERVICE_HOST environement variable. By doing that containers under a Linux host are able to resolver `host.docker.internal` IP alias.
-
-```bash
-#SERVICE_HOST=localhost
-SERVICE_HOST=host.docker.internal
-```
-
-Once all is properly configured, deploy all wallet services with docker compose by running:
-
-```bash
-docker compose up -d
-```
+This project depends on a wallet infrastructure (e.g. walt.id) and other components. Please see the specific deployment method instructions (such as **[Mini Deployment](./deployment/mini/README.md)**) for detailed setup steps.
 
 ## Quick use tutorial
 

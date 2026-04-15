@@ -1,0 +1,124 @@
+name: "eunomia-heimdall"
+
+services:
+  heimdall-vault:
+    image: hashicorp/vault:1.21
+    container_name: heimdall-vault
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ./../../vault/heimdall/config:/vault/config
+      - ./../../vault/heimdall/data:/vault/file
+    environment:
+      VAULT_CACERT: /vault/config/root-ca.pem
+      VAULT_LOCAL_CONFIG: >
+        {
+          "storage": { "file": { "path": "/vault/file" } },
+          "listener": [{
+            "tcp": {
+              "address": "0.0.0.0:8200",
+              "tls_cert_file": "/vault/config/vault-cert.pem",
+              "tls_key_file": "/vault/config/vault-key.pem",
+              "tls_client_ca_file": "/vault/config/vault-ca.pem"
+            }
+          }],
+          "ui": true,
+          "api_addr": "https://127.0.0.1:8200",
+          "default_lease_ttl": "168h",
+          "max_lease_ttl": "720h"
+        }
+    command: server
+
+  heimdall-db:
+    container_name: heimdall-db
+    image: postgres
+    restart: always
+    env_file:
+      - ./../../static/envs/heimdall/db.env
+
+  heimdall-setup:
+    container_name: heimdall-setup
+    image: rmenendez8/heimdall:v1.3.6
+    volumes:
+      - ./../../static/config/heimdall/prod:/app/static/config
+      - ./../../static/specs/heimdall:/app/static/specs
+      - ./../../vault/heimdall:/app/vault
+    depends_on:
+      - heimdall-db
+      - heimdall-vault
+    env_file:
+      - ./../../static/envs/heimdall/heimdall.env
+    environment:
+      RUST_BACKTRACE: 1
+    command:
+      - setup
+      - --env-file
+      - /app/static/environment/config/eco_authority.yaml
+    restart: "no"
+
+  heimdall:
+    container_name: heimdall
+    image: rmenendez8/heimdall:v1.3.6
+    volumes:
+      - ./../../static/config/heimdall/prod:/app/static/config
+      - ./../../static/specs/heimdall:/app/static/specs
+      - ./../../vault/heimdall:/app/vault
+    depends_on:
+      heimdall-setup:
+        condition: service_completed_successfully
+    env_file:
+      - ./static/environment/envs/heimdall.env
+    environment:
+      RUST_BACKTRACE: 1
+    command:
+      - start
+      - --env-file
+      - /app/static/environment/config/eco_authority.yaml
+
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:19.0.3
+    restart: always
+    ports:
+      - "8443:8443"
+    volumes:
+      - "./../../vault/heimdall/config/:/etc/x509/https:ro"
+      - "./../../static/react/keycloak-theme/heimdall:/opt/keycloak/themes/heimdall"
+    env_file:
+      - ./../../static/envs/heimdall/keycloak.env
+    depends_on:
+      - keycloak_postgres
+    command:
+      - start
+
+  keycloak_postgres:
+    container_name: keycloak_postgres
+    image: postgres:15
+    restart: always
+    env_file:
+      - ./../../static/envs/heimdall/keycloak.db.env
+    volumes:
+      - ./../../keycloak:/var/lib/postgresql/data
+
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+    container_name: oauth2-proxy
+    ports:
+      - "443:4180"
+    volumes:
+      - ./../../vault/config:/certs:ro
+      - ./../../static/react/proxy-templates:/templates:ro
+    env_file:
+      - ./../../static/envs/heimdall/proxy.env
+    command:
+      - --skip-auth-route=^/\.well-known.*
+      - --skip-auth-route=^/api/v1/issuer.*
+      - --skip-auth-route=^/api/v1/verifier.*
+      - --skip-auth-route=^/api/v1/gate.*
+      - --skip-auth-route=^/assets/.*
+      - --skip-auth-route=^/$
+    depends_on:
+      - heimdall
+      - keycloak

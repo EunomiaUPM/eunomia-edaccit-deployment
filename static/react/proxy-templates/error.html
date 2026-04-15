@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heimdall Authority - Error</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --background: #09091B;
+      --foreground: #f8f8fa;
+      --card: #09091B;
+      --brand-sky: #9DD5F2;
+      --brand-purple: #B592DB;
+      --radius: 0.5rem;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .bg-glow {
+      position: fixed; width: 600px; height: 600px;
+      background: radial-gradient(circle, var(--brand-sky) 0%, transparent 70%);
+      opacity: 0.05; top: -200px; left: -200px;
+      border-radius: 50%; pointer-events: none;
+    }
+    
+    .bg-glow-2 {
+      position: fixed; width: 600px; height: 600px;
+      background: radial-gradient(circle, var(--brand-purple) 0%, transparent 70%);
+      opacity: 0.05; bottom: -200px; right: -200px;
+      border-radius: 50%; pointer-events: none;
+    }
+
+    .container {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 400px; padding: 2rem;
+    }
+
+    .card {
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius);
+      padding: 2.5rem 2rem;
+      backdrop-filter: blur(10px);
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .logo-container { margin-bottom: 1.5rem; display: flex; justify-content: center; }
+
+    .logo-text {
+      font-size: 2rem; font-weight: 800; letter-spacing: 0.2em;
+      color: var(--foreground); margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 1.25rem; font-weight: 600;
+      margin-bottom: 0.5rem; color: #ef4444; /* Error red */
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.875rem; margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="container">
+    <div class="card">
+      <div class="logo-container">
+        <div class="logo-text">HEIMDALL</div>
+      </div>
+      
+      <h1>Error</h1>
+      <p>{{.Message}}</p>
+    </div>
+  </div>
+</body>
+</html>

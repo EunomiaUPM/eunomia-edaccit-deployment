@@ -1,0 +1,49 @@
+name: mini-heimdall
+
+services:
+  heimdall-db:
+    container_name: heimdall-db
+    image: postgres
+    restart: always
+    env_file:
+      - ./../../static/envs/heimdall/db.env.example
+    ports:
+      - "1450:5432"
+
+  heimdall-setup:
+    container_name: heimdall-setup
+    image: rmenendez8/heimdall:v1.3.6
+    volumes:
+      - ./../../static/config/heimdall/mini:/app/static/config
+      - ./../../static/specs/heimdall:/app/static/specs
+      - ./../../vault/heimdall:/app/vault
+    depends_on:
+      - heimdall-db
+    env_file:
+      - ./../../static/envs/heimdall/heimdall.env.example
+    command:
+      - setup
+      - --env-file
+      - /app/static/config/mini_basic_dataspace_authority.yaml
+    restart: "no"
+
+  heimdall:
+    container_name: heimdall
+    image: rmenendez8/heimdall:v1.3.6
+    ports:
+      - "1500:1500"
+    volumes:
+      - ./../../static/config/heimdall/mini:/app/static/config
+      - ./../../static/specs/heimdall:/app/static/specs
+      - ./../../vault/heimdall:/app/vault
+    depends_on:
+      heimdall-setup:
+        condition: service_completed_successfully
+    env_file:
+      - ./../../static/envs/heimdall/heimdall.env.example
+    command:
+      - start
+      - --env-file
+      - /app/static/config/mini_basic_dataspace_authority.yaml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

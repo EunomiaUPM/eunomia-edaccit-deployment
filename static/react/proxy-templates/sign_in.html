@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heimdall Authority - Login</title>
+  
+  <!-- Use Inter font matching Heimdall's React app -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --background: #09091B;
+      --foreground: #f8f8fa;
+      --card: #09091B;
+      --card-foreground: #f8f8fa;
+      --primary: 210 40% 98%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+      --brand-sky: #9DD5F2;
+      --brand-purple: #B592DB;
+      --radius: 0.5rem;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Ambient background glow */
+    .bg-glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--brand-sky) 0%, transparent 70%);
+      opacity: 0.05;
+      top: -200px;
+      left: -200px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    
+    .bg-glow-2 {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--brand-purple) 0%, transparent 70%);
+      opacity: 0.05;
+      bottom: -200px;
+      right: -200px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 400px;
+      padding: 2rem;
+    }
+
+    .card {
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius);
+      padding: 2.5rem 2rem;
+      backdrop-filter: blur(10px);
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .logo-container {
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* We inject the logo text directly since we don't have the SVG exported here easily. 
+       We mimic the Heimdall logo text from AppSidebar */
+    .logo-text {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      color: var(--foreground);
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--brand-sky);
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.875rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: white;
+      background: linear-gradient(135deg, var(--brand-sky), var(--brand-purple));
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="container">
+    <div class="card">
+      <div class="logo-container">
+        <div class="logo-text">HEIMDALL</div>
+      </div>
+      
+      <h1>Identity Authority</h1>
+      <p>Sign in to access the Heimdall Administration Dashboard and manage Verifiable Credentials.</p>
+
+      <!-- The form logic is identical to oauth2-proxy defaults to ensure it works -->
+      <form method="GET" action="{{.ProxyPrefix}}/start">
+        <input type="hidden" name="rd" value="{{.Redirect}}">
+        <button type="submit" class="btn">Sign in</button>
+      </form>
+    </div>
+
+    <footer>
+      Secured with OAuth2 Proxy
+    </footer>
+  </div>
+
+  <script>
+    if (window.location.hash) {
+      (function() {
+        var inputs = document.getElementsByName('rd');
+        for (var i = 0; i < inputs.length; i++) {
+          var idx = inputs[i].value.indexOf('#');
+          if (idx >= 0) {
+            inputs[i].value = inputs[i].value.substr(0, idx);
+          }
+          inputs[i].value += window.location.hash;
+        }
+      })();
+    }
+  </script>
+</body>
+</html>
