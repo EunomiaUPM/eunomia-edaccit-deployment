@@ -302,7 +302,7 @@ OAUTH2_PROXY_SSL_INSECURE_SKIP_VERIFY=true
 Generate the cookie secret with:
 
 ```bash
-openssl rand -base64 32
+openssl rand -base64 24
 ```
 
 ---
