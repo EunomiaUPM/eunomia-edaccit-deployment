@@ -36,16 +36,14 @@ services:
     image: "postgres"
     restart: always
     env_file:
-      - ./../../static/envs/consumer.db.env
-    ports:
-      - "1300:5432"
+      - ./../../static/envs/consumer/db.env
 
   consumer-redis:
     image: redis:alpine
     restart: always
     container_name: consumer-redis
     ports:
-      - "6380:6379"
+      - "6379:6379"
     command: >
       redis-server
       --requirepass ds_core_consumer_redis
@@ -68,7 +66,7 @@ services:
       - consumer-vault
       - consumer-redis
     env_file:
-      - ./../../static/envs/prod/consumer.env
+      - ./../../static/envs/consumer/core.env
     restart: "no"
 
   # =========================
@@ -76,12 +74,10 @@ services:
   # =========================
   consumer:
     container_name: consumer
-    build:
-      context: ../..
-      dockerfile: deployment/Dockerfile
+    image: rmenendez8/rainbow:v1.2.6
     command: ["start", "-e", "/app/static/config/core.consumer.yaml"]
     ports:
-      - "1100:1100"
+      - "443:443"
     volumes:
       - ./../../static/config/consumer/prod:/app/static/config
       - ./../../static/specs/agent:/app/static/specs
@@ -97,6 +93,6 @@ services:
       consumer-redis:
         condition: service_started
     env_file:
-      - ./../../static/envs/core.consumer.env
+      - ./../../static/envs/consumer/core.env
     environment:
       RUST_BACKTRACE: full

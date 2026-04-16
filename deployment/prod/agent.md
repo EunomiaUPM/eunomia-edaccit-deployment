@@ -80,7 +80,7 @@ identifier |
 Start only Vault and databases. The Agent is not started yet — it depends on the configuration obtained in the next steps.
 
 ```bash
-docker compose -f docker-compose.consumer.yml up consumer-vault consumer-redis consumer-db -d
+docker compose -f docker-compose.consumer.yaml up consumer-vault consumer-redis consumer-db -d
 ```
 
 Wait a few seconds for all services to be ready before proceeding.
@@ -174,7 +174,7 @@ VAULT_APP_ROOT_CLIENT_KEY=crypto/keys/vault-root-cert.pem
 With all environment files complete, start all services:
 
 ```bash
-docker compose -f docker-compose.consumer.yml up -d
+docker compose -f docker-compose.consumer.yaml up -d
 ```
 
 All services should now be running. Visit `https://your.domain.com/admin/login` — you should be redirected to the Keycloak login page.

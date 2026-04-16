@@ -2,10 +2,10 @@
 # COMMON ANCHORS
 # ==========================
 http_host: &http_host
-  protocol: 'https'
-  url: 'your_domain'
-  port: null
-  internal_port: '1500'
+  protocol: 'http'
+  url: 'host.docker.internal'
+  port: '1500'
+  internal_port: null
 
 # ==========================
 # CONFIG
@@ -17,10 +17,10 @@ hosts_config:
   graphql: null
 
 connection_config:
-  is_local: false
-  is_prod: true
-  is_vault_real: true
-  has_tls_proxy: true
+  is_local: true
+  is_prod: false
+  is_vault_real: false
+  has_tls_proxy: false
 
 db_config:
   db_type: Postgres
@@ -29,19 +29,19 @@ db_config:
 
 wallet_config:
   api:
-    protocol: 'https'
-    url: 'wallet.demo.walt.id'
-    port: null
+    protocol: 'http'
+    url: 'host.docker.internal'
+    port: '7001'
   id: null
 
 did_config:
-  did: 'did:web:your_domain'
-  type: Web
-  did_web_options:
-    domain: 'your_domain'
-    path: null
+  did: 'did:jwk:...'
+  type: Jwk
+  did_web_options: null
+  #    domain: "CHANGE_ME"
+  #    path: null
 
-role: EcoAuthority
+role: DataSpaceAuthority
 
 api_config:
   version: 'v1'
@@ -53,7 +53,7 @@ vc_config:
 
 issue_config:
   ds_config:
-    dataspace_id: 'change_me'
+    dataspace_id: 'HeimdallDataspace'
   clh_config:
     label_level: 'SC'
     engine_version: '2.11.0'

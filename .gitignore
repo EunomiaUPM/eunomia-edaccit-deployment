@@ -3,6 +3,10 @@ vault/**
 !vault/**/*.example
 !vault/**/*.gitkeep
 
+static/envs/**
+!static/envs/**/
+!static/envs/**/*.example
+
 cert.json.example
 public_key.json.example
 private_key.json.example
