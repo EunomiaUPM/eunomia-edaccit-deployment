@@ -42,7 +42,7 @@ By default, Eunomia operates in a generic dataspace mode. To make the deployment
 
 ### 1 — Verification configuration
 
-In the Agent/Heimdall config YAML, update the `verify_req_config` block to require a GAIA-X Label Credential:
+In the Agent config YAML, update the `verify_req_config` block to require a GAIA-X Label Credential:
 
 ```yaml
 verify_req_config:
