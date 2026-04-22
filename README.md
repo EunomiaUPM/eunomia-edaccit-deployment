@@ -2,6 +2,14 @@
 
 This repository contains artifacts and scripts to deploy and test the Eunomia framework. It includes example certificates for authority, provider, and consumer, a central docker-compose file, and automation scripts in Bash or Powershell.
 
+## **Eunomia Components**
+
+This deployment orchestrates several core components of the Eunomia ecosystem:
+
+- **[Eunomia Agents](https://github.com/EunomiaUPM/ds-agent)**: The Dataspace Agents that handle the core logic for participants (Provider and Consumer).
+- **[Heimdall](https://github.com/EunomiaUPM/heimdall)**: The Dataspace Authority and Clearing House that governs onboarding and compliance.
+
+
 ## **Deployment Methods**
 
 There are two main ways to deploy this environment:
