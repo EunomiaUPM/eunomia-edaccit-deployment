@@ -62,6 +62,7 @@ issue_config:
 
 verify_req_config:
   is_cert_allowed: true
+  auto_approve_cert: true
   vcs_requested: ['gx:VatId', 'gx:LegalPerson', 'gx:TermsAndConditions']
 
 is_react: true

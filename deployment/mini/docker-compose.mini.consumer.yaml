@@ -26,7 +26,7 @@ services:
   # =========================
   consumer-setup:
     container_name: consumer-setup
-    image: rmenendez8/rainbow:v1.2.6
+    image: rmenendez8/rainbow:v1.3.0
     command: ["setup", "-e", "/app/static/config/mini.consumer.yaml"]
     volumes:
       - ./../../static/config/consumer/mini:/app/static/config
@@ -45,7 +45,7 @@ services:
   # =========================
   consumer:
     container_name: consumer
-    image: rmenendez8/rainbow:v1.2.6
+    image: rmenendez8/rainbow:v1.3.0
     command: ["start", "-e", "/app/static/config/mini.consumer.yaml"]
     ports:
       - "1100:1100"

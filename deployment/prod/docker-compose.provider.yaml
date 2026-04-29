@@ -54,7 +54,7 @@ services:
   # =========================
   provider-setup:
     container_name: provider-setup
-    image: rmenendez8/rainbow:v1.2.6
+    image: rmenendez8/rainbow:v1.3.0
     command: ["setup", "-e", "/app/static/config/core.provider.yaml"]
     volumes:
       - ./../../static/config/provider/prod:/app/static/config
@@ -74,7 +74,7 @@ services:
   # =========================
   provider:
     container_name: provider
-    image: rmenendez8/rainbow:v1.2.6
+    image: rmenendez8/rainbow:v1.3.0
     command: ["start", "-e", "/app/static/config/core.provider.yaml"]
     ports:
       - "443:443"
