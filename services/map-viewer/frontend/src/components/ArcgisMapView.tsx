@@ -3,7 +3,8 @@ import Map from '@arcgis/core/Map.js'
 import MapView from '@arcgis/core/views/MapView.js'
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer.js'
 import type { LayerDef } from '../config/layers'
-import styles from './ArcgisMapView.module.css'
+import { Alert, AlertDescription } from './ui/alert'
+import { X } from 'lucide-react'
 
 interface Props {
   activeLayers: LayerDef[]
@@ -55,8 +56,7 @@ export function ArcgisMapView({ activeLayers }: Props) {
 
       layer.when(
         undefined,
-        (err: Error) =>
-          setError(`Failed to load "${def.title}": ${err.message}`),
+        (err: Error) => setError(`Failed to load "${def.title}": ${err.message}`),
       )
 
       map.layers.add(layer)
@@ -64,13 +64,21 @@ export function ArcgisMapView({ activeLayers }: Props) {
   }, [mapReady, activeLayers])
 
   return (
-    <div className={styles.container}>
-      <div ref={containerRef} className={styles.map} />
+    <div className="relative w-full h-full">
+      <div ref={containerRef} className="w-full h-full" />
       {error && (
-        <div className={styles.errorToast}>
-          <span>{error}</span>
-          <button onClick={() => setError(null)}>×</button>
-        </div>
+        <Alert
+          variant="destructive"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-lg z-10 flex items-center gap-3 shadow-lg"
+        >
+          <AlertDescription className="flex-1">{error}</AlertDescription>
+          <button
+            onClick={() => setError(null)}
+            className="shrink-0 opacity-70 hover:opacity-100 transition-opacity"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </Alert>
       )}
     </div>
   )
