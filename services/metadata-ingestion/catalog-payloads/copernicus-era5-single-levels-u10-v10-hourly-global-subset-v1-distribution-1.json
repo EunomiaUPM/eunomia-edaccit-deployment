@@ -1,0 +1,7 @@
+{
+  "dctTitle": "NetCDF distribution of the ERA5 hourly single-level subset",
+  "dctDescription": "NetCDF distribution of a CDS ERA5 subset containing hourly 10 metre U and V wind components. Access to the parent dataset is provided through the CDS download interface and the CDS API, subject to user registration and acceptance of the dataset terms of use.",
+  "dcatAccessService": "__DATA_SERVICE_ID__",
+  "datasetId": "__DATASET_ID__",
+  "dctFormats": "HTTP_PULL"
+}

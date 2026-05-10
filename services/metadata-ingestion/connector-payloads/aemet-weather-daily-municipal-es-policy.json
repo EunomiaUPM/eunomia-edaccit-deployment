@@ -1,0 +1,15 @@
+{
+  "odrlOffer": {
+    "permission": [
+      {
+        "action": "use",
+        "constraint": []
+      }
+    ],
+    "obligation": [],
+    "prohibition": []
+  },
+  "entityId": "__DATASET_ID__",
+  "entityType": "Dataset",
+  "description": "Open access policy for 'Predicción meteorológica diaria por municipio en España (fuente AEMET)'. Data is publicly available."
+}

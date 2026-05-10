@@ -1,0 +1,19 @@
+{
+  "templateName": "__CONN_PULL_NAME__",
+  "templateVersion": "__CONN_PULL_VERSION__",
+  "distributionId": "__DISTRIBUTION_ID__",
+  "metadata": {
+    "description": "Distribución accesible mediante el servicio WFS de ADIF/IDEADIF. El servicio devuelve datos geográficos en application/gml+xml y permite consulta y descarga de la capa tn-ra:RailwayLink mediante operaciones WFS.",
+    "ownerId": "__OWNER_ID__"
+  },
+  "dryRun": false,
+  "parameters": {
+    "ACCESS_URL": "https://ideadif.adif.es/services/wfs",
+    "ACCESS_METHODS": [
+      "GET"
+    ],
+    "ACCESS_HEADERS": {
+      "Accept": "application/gml+xml"
+    }
+  }
+}

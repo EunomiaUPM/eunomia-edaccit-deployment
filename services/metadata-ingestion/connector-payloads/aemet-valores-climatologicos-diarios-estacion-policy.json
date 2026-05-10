@@ -1,0 +1,15 @@
+{
+  "odrlOffer": {
+    "permission": [
+      {
+        "action": "use",
+        "constraint": []
+      }
+    ],
+    "obligation": [],
+    "prohibition": []
+  },
+  "entityId": "__DATASET_ID__",
+  "entityType": "Dataset",
+  "description": "Open access policy for 'Valores climatológicos diarios por estación meteorológica (AEMET)'. Data is publicly available."
+}

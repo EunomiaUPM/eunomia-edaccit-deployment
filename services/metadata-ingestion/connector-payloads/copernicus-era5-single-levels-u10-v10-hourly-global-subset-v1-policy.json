@@ -1,0 +1,15 @@
+{
+  "odrlOffer": {
+    "permission": [],
+    "obligation": [],
+    "prohibition": [
+      {
+        "action": "use",
+        "constraint": []
+      }
+    ]
+  },
+  "entityId": "__DATASET_ID__",
+  "entityType": "Dataset",
+  "description": "Restricted access policy for 'ERA5 hourly single levels subset – 10 m wind components (NetCDF extract)'. Access conditions must be defined."
+}

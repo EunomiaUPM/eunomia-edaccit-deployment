@@ -1,0 +1,19 @@
+{
+  "templateName": "__CONN_PULL_NAME__",
+  "templateVersion": "__CONN_PULL_VERSION__",
+  "distributionId": "__DISTRIBUTION_ID__",
+  "metadata": {
+    "description": "Archivo comprimido que contiene el mapa temático de aeropuertos abiertos al tráfico civil en España (2016) en formatos SHAPE, PDF y JPG.",
+    "ownerId": "__OWNER_ID__"
+  },
+  "dryRun": false,
+  "parameters": {
+    "ACCESS_URL": "https://centrodedescargas.cnig.es/CentroDescargas/busquedaRedirigida.do?ruta=PUBLICACION_CNIG_DATOS_VARIOS/aneTematico/Espana_Aeropuertos-abiertos-al-trafico-civil_2016_mapa_14974_spa.zip",
+    "ACCESS_METHODS": [
+      "GET"
+    ],
+    "ACCESS_HEADERS": {
+      "Accept": "application/zip"
+    }
+  }
+}

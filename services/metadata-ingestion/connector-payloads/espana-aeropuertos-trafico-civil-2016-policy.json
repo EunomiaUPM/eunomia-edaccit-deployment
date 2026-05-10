@@ -1,0 +1,15 @@
+{
+  "odrlOffer": {
+    "permission": [
+      {
+        "action": "use",
+        "constraint": []
+      }
+    ],
+    "obligation": [],
+    "prohibition": []
+  },
+  "entityId": "__DATASET_ID__",
+  "entityType": "Dataset",
+  "description": "Open access policy for 'España – Aeropuertos abiertos al tráfico civil (2016)'. Data is publicly available."
+}

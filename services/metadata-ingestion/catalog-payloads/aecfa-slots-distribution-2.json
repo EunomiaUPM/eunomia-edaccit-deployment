@@ -1,0 +1,6 @@
+{
+  "dctTitle": "Distribución TXT con todos los slots",
+  "dcatAccessService": "__DATA_SERVICE_ID__",
+  "datasetId": "__DATASET_ID__",
+  "dctFormats": "HTTP_PULL"
+}

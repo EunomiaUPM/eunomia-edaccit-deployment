@@ -1,0 +1,19 @@
+{
+  "templateName": "__CONN_PULL_NAME__",
+  "templateVersion": "__CONN_PULL_VERSION__",
+  "distributionId": "__DISTRIBUTION_ID__",
+  "metadata": {
+    "description": "Distribución accesible mediante una feature layer de ArcGIS Online correspondiente a la capa Estaciones de la Red de ferrocarriles de España. La respuesta incluye atributos y geometrías puntuales en referencia espacial EPSG:4258 según el JSON proporcionado.",
+    "ownerId": "__OWNER_ID__"
+  },
+  "dryRun": false,
+  "parameters": {
+    "ACCESS_URL": "https://www.arcgis.com/home/item.html?id=a8b2fbacecc347acb1ef013c48bb25f9",
+    "ACCESS_METHODS": [
+      "GET"
+    ],
+    "ACCESS_HEADERS": {
+      "Accept": "application/json"
+    }
+  }
+}
