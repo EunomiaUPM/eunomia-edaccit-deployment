@@ -1,0 +1,7 @@
+{
+  "dctTitle": "Distribución GML del servicio WFS de Tramificación Común",
+  "dctDescription": "Distribución accesible mediante el servicio WFS de ADIF/IDEADIF. El servicio devuelve datos geográficos en application/gml+xml y permite consulta y descarga de la capa tn-ra:RailwayLink mediante operaciones WFS.",
+  "dcatAccessService": "__DATA_SERVICE_ID__",
+  "datasetId": "__DATASET_ID__",
+  "dctFormats": "HTTP_PULL"
+}

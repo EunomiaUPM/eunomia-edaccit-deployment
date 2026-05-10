@@ -1,0 +1,19 @@
+{
+  "templateName": "__CONN_PULL_NAME__",
+  "templateVersion": "__CONN_PULL_VERSION__",
+  "distributionId": "__DISTRIBUTION_ID__",
+  "metadata": {
+    "description": "NetCDF distribution of a CDS ERA5 subset containing hourly 10 metre U and V wind components. Access to the parent dataset is provided through the CDS download interface and the CDS API, subject to user registration and acceptance of the dataset terms of use.",
+    "ownerId": "__OWNER_ID__"
+  },
+  "dryRun": false,
+  "parameters": {
+    "ACCESS_URL": "https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download",
+    "ACCESS_METHODS": [
+      "GET"
+    ],
+    "ACCESS_HEADERS": {
+      "Accept": "application/netcdf"
+    }
+  }
+}

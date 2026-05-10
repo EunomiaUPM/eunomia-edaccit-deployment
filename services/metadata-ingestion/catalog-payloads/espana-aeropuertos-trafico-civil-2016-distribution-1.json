@@ -1,0 +1,7 @@
+{
+  "dctTitle": "Descarga del mapa temático en formatos SHAPE, PDF y JPG",
+  "dctDescription": "Archivo comprimido que contiene el mapa temático de aeropuertos abiertos al tráfico civil en España (2016) en formatos SHAPE, PDF y JPG.",
+  "dcatAccessService": "__DATA_SERVICE_ID__",
+  "datasetId": "__DATASET_ID__",
+  "dctFormats": "HTTP_PULL"
+}

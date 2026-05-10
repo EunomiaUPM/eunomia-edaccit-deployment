@@ -1,0 +1,7 @@
+{
+  "dctTitle": "Acceso al servicio ArcGIS Feature Service",
+  "dctDescription": "Distribución de acceso al recurso mediante servicio ArcGIS REST FeatureServer de acceso público. La información se ofrece con fines de demostración y no se permite su uso en entornos productivos según las condiciones indicadas por el proveedor.",
+  "dcatAccessService": "__DATA_SERVICE_ID__",
+  "datasetId": "__DATASET_ID__",
+  "dctFormats": "HTTP_PULL"
+}

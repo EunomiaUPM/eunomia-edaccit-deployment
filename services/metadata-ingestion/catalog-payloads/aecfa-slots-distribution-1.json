@@ -1,0 +1,6 @@
+{
+  "dctTitle": "Distribución GTFS de vuelos nacionales",
+  "dcatAccessService": "__DATA_SERVICE_ID__",
+  "datasetId": "__DATASET_ID__",
+  "dctFormats": "HTTP_PULL"
+}

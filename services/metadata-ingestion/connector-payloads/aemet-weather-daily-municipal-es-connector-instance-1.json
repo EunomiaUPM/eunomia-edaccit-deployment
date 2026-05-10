@@ -1,0 +1,19 @@
+{
+  "templateName": "__CONN_PULL_NAME__",
+  "templateVersion": "__CONN_PULL_VERSION__",
+  "distributionId": "__DISTRIBUTION_ID__",
+  "metadata": {
+    "description": "Distribución de acceso al recurso mediante servicio ArcGIS REST FeatureServer de acceso público. La información se ofrece con fines de demostración y no se permite su uso en entornos productivos según las condiciones indicadas por el proveedor.",
+    "ownerId": "__OWNER_ID__"
+  },
+  "dryRun": false,
+  "parameters": {
+    "ACCESS_URL": "https://services1.arcgis.com/nCKYwcSONQTkPA4K/arcgis/rest/services/Predicción_Meteorológica_diaria_de_España_(Fuente_Aemet)/FeatureServer",
+    "ACCESS_METHODS": [
+      "GET"
+    ],
+    "ACCESS_HEADERS": {
+      "Accept": "application/json"
+    }
+  }
+}

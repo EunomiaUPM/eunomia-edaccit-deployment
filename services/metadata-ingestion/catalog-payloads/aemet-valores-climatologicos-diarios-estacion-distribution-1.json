@@ -1,0 +1,7 @@
+{
+  "dctTitle": "Distribución JSON a través de AEMET OpenData",
+  "dctDescription": "Distribución accesible mediante la API REST de AEMET OpenData. La consulta requiere API key y devuelve una URL temporal para recuperar el conjunto de datos solicitado en formato JSON.",
+  "dcatAccessService": "__DATA_SERVICE_ID__",
+  "datasetId": "__DATASET_ID__",
+  "dctFormats": "HTTP_PULL"
+}

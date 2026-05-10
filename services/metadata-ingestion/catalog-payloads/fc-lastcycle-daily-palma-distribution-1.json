@@ -1,0 +1,7 @@
+{
+  "dctTitle": "Distribución NetCDF de la predicción oceanográfica diaria de Palma",
+  "dctDescription": "Fichero NetCDF accesible mediante THREDDS/OPeNDAP con variables de nivel del mar y corriente marina para la zona de Palma.",
+  "dcatAccessService": "__DATA_SERVICE_ID__",
+  "datasetId": "__DATASET_ID__",
+  "dctFormats": "HTTP_PULL"
+}

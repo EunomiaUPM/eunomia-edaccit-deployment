@@ -1,0 +1,7 @@
+{
+  "dctTitle": "Distribución JSON de la capa Estaciones",
+  "dctDescription": "Distribución accesible mediante una feature layer de ArcGIS Online correspondiente a la capa Estaciones de la Red de ferrocarriles de España. La respuesta incluye atributos y geometrías puntuales en referencia espacial EPSG:4258 según el JSON proporcionado.",
+  "dcatAccessService": "__DATA_SERVICE_ID__",
+  "datasetId": "__DATASET_ID__",
+  "dctFormats": "HTTP_PULL"
+}

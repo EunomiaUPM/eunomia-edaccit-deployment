@@ -1,0 +1,19 @@
+{
+  "templateName": "__CONN_PULL_NAME__",
+  "templateVersion": "__CONN_PULL_VERSION__",
+  "distributionId": "__DISTRIBUTION_ID__",
+  "metadata": {
+    "description": "Fichero NetCDF accesible mediante THREDDS/OPeNDAP con variables de nivel del mar y corriente marina para la zona de Castellón.",
+    "ownerId": "__OWNER_ID__"
+  },
+  "dryRun": false,
+  "parameters": {
+    "ACCESS_URL": "https://opendap.puertos.es/thredds/catalog/circulation_coastal_cas/latest-files/catalog.html?dataset=circulation_coastal_cas/latest-files/FC-lastcycle-daily.nc",
+    "ACCESS_METHODS": [
+      "GET"
+    ],
+    "ACCESS_HEADERS": {
+      "Accept": "application/netcdf"
+    }
+  }
+}
