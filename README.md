@@ -49,16 +49,16 @@ This repository contains the artifacts and scripts to deploy and demonstrate the
 
 The Provider publishes the following datasets:
 
-| Dataset | Source | Type |
-| --- | --- | --- |
-| Infraestructura ferroviaria (ADIF) | ESRILab ArcGIS | FeatureServer |
-| Estaciones ferroviarias (IGN) | ESRILab ArcGIS | FeatureServer |
-| AEMET valores climatológicos diarios por estación | AEMET API | REST/JSON |
-| AEMET predicción meteorológica municipal diaria | AEMET API | REST/JSON |
-| Copernicus ERA5 viento horario global (subconjunto v1) | CDS API | REST/JSON |
-| Slots aeroportuarios (AECFA NAP) | NAP | REST/JSON |
-| Aeropuertos España — tráfico civil 2016 | Open data | REST/JSON |
-| FC lastcycle daily — Palma, Ibiza, Mahón, Castellón | FC API | REST/JSON |
+| Dataset                                                | Source         | Type          |
+| ------------------------------------------------------ | -------------- | ------------- |
+| Infraestructura ferroviaria (ADIF)                     | ESRILab ArcGIS | FeatureServer |
+| Estaciones ferroviarias (IGN)                          | ESRILab ArcGIS | FeatureServer |
+| AEMET valores climatológicos diarios por estación      | AEMET API      | REST/JSON     |
+| AEMET predicción meteorológica municipal diaria        | AEMET API      | REST/JSON     |
+| Copernicus ERA5 viento horario global (subconjunto v1) | CDS API        | REST/JSON     |
+| Slots aeroportuarios (AECFA NAP)                       | NAP            | REST/JSON     |
+| Aeropuertos España — tráfico civil 2016                | Open data      | REST/JSON     |
+| FC lastcycle daily — Palma, Ibiza, Mahón, Castellón    | FC API         | REST/JSON     |
 
 Metadata is authored as DCAT-AP 3.0.1 JSON-LD files in [`services/metadata-ingestion/metadata/`](services/metadata-ingestion/metadata/) and converted to provider API payloads by `scripts/ingest.sh`.
 
@@ -71,17 +71,17 @@ Metadata is authored as DCAT-AP 3.0.1 JSON-LD files in [`services/metadata-inges
 - Permissions to execute scripts (`chmod +x`)
 - The following local ports must be free:
 
-| Port | Service |
-| --- | --- |
+| Port   | Service              |
+| ------ | -------------------- |
 | `1500` | Heimdall (Authority) |
-| `1200` | Provider DS-Agent |
-| `1100` | Consumer DS-Agent |
-| `8000` | Map Viewer |
-| `1450` | Heimdall PostgreSQL |
-| `1400` | Provider PostgreSQL |
-| `1300` | Consumer PostgreSQL |
-| `6379` | Provider Redis |
-| `6380` | Consumer Redis |
+| `1200` | Provider DS-Agent    |
+| `1100` | Consumer DS-Agent    |
+| `8000` | Map Viewer           |
+| `1450` | Heimdall PostgreSQL  |
+| `1400` | Provider PostgreSQL  |
+| `1300` | Consumer PostgreSQL  |
+| `6379` | Provider Redis       |
+| `6380` | Consumer Redis       |
 
 ---
 
@@ -159,8 +159,8 @@ The viewer is available at `http://localhost:8000`.
 
 Use the Eunomia DS-Agent UI to start a DSP-compliant contract negotiation and then initiate a transfer session:
 
-| Agent | URL |
-| --- | --- |
+| Agent    | URL                     |
+| -------- | ----------------------- |
 | Provider | `http://127.0.0.1:1200` |
 | Consumer | `http://127.0.0.1:1100` |
 
@@ -194,12 +194,14 @@ Credentials are read from `services/map-viewer/.env`. Any variable already expor
 
 ## Map Viewer modes
 
-| Mode | How auth works | When to use |
-| --- | --- | --- |
-| **DIRECT** | FastAPI backend fetches an ESRILab token and proxies it into every SDK request via `/arcgis-proxy`. | Local development, direct connectivity to ESRILab. |
-| **EUNOMIA** | User pastes the Consumer transfer URL at runtime. FastAPI forwards SDK requests to the Consumer via `/eunomia-proxy`; the Provider injects the token. | Demo of DSP-governed access. |
+| Mode        | How auth works                                                                                                                                        | When to use                                        |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **DIRECT**  | FastAPI backend fetches an ESRILab token and proxies it into every SDK request via `/arcgis-proxy`.                                                   | Local development, direct connectivity to ESRILab. |
+| **EUNOMIA** | User pastes the Consumer transfer URL at runtime. FastAPI forwards SDK requests to the Consumer via `/eunomia-proxy`; the Provider injects the token. | Demo of DSP-governed access.                       |
 
 Switching modes in the sidebar remounts the ArcGIS MapView cleanly, preventing stale SDK cache from a previous session.
+
+![Map viewer](static/docs/map-viewer.png)
 
 ---
 
@@ -209,22 +211,22 @@ Switching modes in the sidebar remounts the ArcGIS MapView cleanly, preventing s
 
 Backend (`services/map-viewer/.env`):
 
-| Variable | Description |
-| --- | --- |
-| `ARCGIS_PORTAL_URL` | ESRILab portal root (e.g. `https://edaccit.esrilab.es/portal`) |
-| `ARCGIS_SERVER_URL` | ESRILab server root (e.g. `https://edaccit.esrilab.es/server`) |
-| `ARCGIS_USERNAME` | Service account username |
-| `ARCGIS_PASSWORD` | Service account password |
-| `ARCGIS_TOKEN_EXPIRY` | Token lifetime in minutes (default: `120`) |
-| `ARCGIS_REFERER` | Referer used when generating the token (must match frontend origin) |
-| `ARCGIS_VERIFY_SSL` | Set to `false` to skip TLS verification |
+| Variable                  | Description                                                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `ARCGIS_PORTAL_URL`       | ESRILab portal root (e.g. `https://edaccit.esrilab.es/portal`)                                                      |
+| `ARCGIS_SERVER_URL`       | ESRILab server root (e.g. `https://edaccit.esrilab.es/server`)                                                      |
+| `ARCGIS_USERNAME`         | Service account username                                                                                            |
+| `ARCGIS_PASSWORD`         | Service account password                                                                                            |
+| `ARCGIS_TOKEN_EXPIRY`     | Token lifetime in minutes (default: `120`)                                                                          |
+| `ARCGIS_REFERER`          | Referer used when generating the token (must match frontend origin)                                                 |
+| `ARCGIS_VERIFY_SSL`       | Set to `false` to skip TLS verification                                                                             |
 | `EUNOMIA_LOCALHOST_ALIAS` | Set to `host.docker.internal` when running in Docker so that `localhost` in proxy URLs resolves to the host machine |
 
 Frontend (`services/map-viewer/frontend/.env.development.local`):
 
-| Variable | Description |
-| --- | --- |
-| `VITE_AUTH_MODE` | `direct` or `eunomia-consumer` — baked into the bundle at build time |
+| Variable               | Description                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| `VITE_AUTH_MODE`       | `direct` or `eunomia-consumer` — baked into the bundle at build time                       |
 | `VITE_ARCGIS_BASE_URL` | ArcGIS server root used to construct layer URLs (e.g. `https://edaccit.esrilab.es/server`) |
 
 ### DID method
@@ -251,9 +253,9 @@ verify_req_config:
 ```yaml
 gaia_config:
   api:
-    protocol: "http"              # mini: http | prod: https
-    url: "host.docker.internal"   # mini | prod: your.domain.com
-    port: "1500"                  # mini: Heimdall port | prod: null
+    protocol: "http" # mini: http | prod: https
+    url: "host.docker.internal" # mini | prod: your.domain.com
+    port: "1500" # mini: Heimdall port | prod: null
 ```
 
 ### 3 — Heimdall startup command
@@ -262,7 +264,7 @@ In the Heimdall Compose file, change the command for both `heimdall` and `heimda
 
 ```yaml
 command:
-  - setup   # or start
+  - setup # or start
   - --env-file
   - /app/static/config/eco_authority.yaml
 ```
