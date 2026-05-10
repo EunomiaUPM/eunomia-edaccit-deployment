@@ -1,84 +1,13 @@
-# **Eunomia Deployment**
+# Edaccit Deployment
 
-This repository contains artifacts and scripts to deploy and test the Eunomia framework. It includes example certificates for authority, provider, and consumer, a central docker-compose file, and automation scripts in Bash or Powershell.
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Consumer_Service-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Go](https://img.shields.io/badge/Go-Provider_Server-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Keycloak](https://img.shields.io/badge/Keycloak-26.1-4D4D4D?logo=keycloak&logoColor=white)](https://www.keycloak.org/)
+[![Metabase](https://img.shields.io/badge/Metabase-Analytics-509EE3?logo=metabase&logoColor=white)](https://www.metabase.com/)
+[![GAIA-X](https://img.shields.io/badge/GAIA--X-Compliant-00A86B?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyTDIgN2wxMCA1IDEwLTV6TTIgMTdsOCA0IDgtNFYxMmwtOCA0LTgtNHoiLz48L3N2Zz4=&logoColor=white)](https://gaia-x.eu/)
+[![DSP](https://img.shields.io/badge/Protocol-DSP-orange)](https://docs.internationaldataspaces.org/ids-knowledgebase/v/dataspace-protocol)
 
-## **Eunomia Components**
-
-This deployment orchestrates several core components of the Eunomia ecosystem:
-
-- **[Eunomia Agents](https://github.com/EunomiaUPM/ds-agent)**: The Dataspace Agents that handle the core logic for participants (Provider and Consumer).
-- **[Heimdall](https://github.com/EunomiaUPM/heimdall)**: The Dataspace Authority and Clearing House that governs onboarding and compliance.
-
-
-## **Deployment Methods**
-
-There are two main ways to deploy this environment:
-
-1. **[Mini Deployment](./deployment/mini/README.md)**: A lightweight deployment using Docker Compose. Click the link to see the specific guide.
-2. **[Prod Deployment](./deployment/prod/README.md)**: Production deployment with TLS, Vault, and Keycloak. Click the link to see the specific guide.
-
-## **Requirements**
-
-- Docker and docker-compose (or Docker Desktop)
-- Permissions to execute scripts (chmod +x)
-
-## **DID Configuration**
-
-Depending on the environment, the Decentralized Identifier (DID) method changes. While **GAIA-X officially only supports `did:web`**, Eunomia allows flexibility for local testing:
-
-- **Mini Deployment (Local)**: Uses **`did:jwk`**. Since `did:web` requires a public domain and resolving a `did.json` file, it is not suitable for local-only environments.
-- **Prod Deployment**: Supports both, but **`did:web`** should be used to remain compliant with GAIA-X standards.
-
-> [!TIP]
-> Heimdall is specifically designed to work as a **Clearing House using `did:jwk`** in local/mini mode, allowing you to test the full compliance flow without needing complex DNS or web server setups.
-
-## **External Dependencies**
-
-This project depends on the **public walt.id wallet API** for credential management. Mini deployments use a local walt.id stack; production deployments point to the public hosted service. See the specific deployment guides for details.
-
-## **GAIA-X Compliance**
-
-By default, Eunomia operates in a generic dataspace mode. To make the deployment **GAIA-X compliant**, the following three changes are required:
-
-### 1 — Verification configuration
-
-In the Agent config YAML, update the `verify_req_config` block to require a GAIA-X Label Credential:
-
-```yaml
-verify_req_config:
-  is_cert_allowed: false
-  vcs_requested: [gx:LabelCredential]
-```
-
-### 2 — GAIA-X connectivity
-
-Add (or update) the `gaia_config` block pointing to the Heimdall instance. The values differ between Mini and Prod:
-
-```yaml
-gaia_config:
-  api:
-    protocol: 'http'            # mini: http | prod: https
-    url: 'url'                  # mini: host.docker.internal | prod: your.domain.com
-    port: null                  # mini: 1500 (Heimdall port) | prod: null
-```
-
-### 3 — Heimdall startup command
-
-In the Docker Compose file, change the `command` for **both** the `heimdall` and `heimdall-setup` services to use the GAIA-X ecosystem config:
-
-```yaml
-command:
-  - setup
-  - --env-file
-  - /app/static/config/eco_authority.yaml
-```
----
-
-> [!NOTE]
-> The `eco_authority.yaml` config activates **all** Heimdall roles simultaneously:
-> - **GAIA-X Clearing House** — essentially a **Dataspace Authority specifically for the GAIA-X ecosystem**; it validates and signs compliance credentials on behalf of the ecosystem.
-> - **Clearing House Proxy** — proxies requests to the Clearing House.
-> - **Legal Authority** — issues legal-level credentials within the dataspace.
-> - **Dataspace Authority** — governs participant onboarding and policy enforcement.
->
-> In a **real-world ecosystem**, a single entity cannot (and should not) assume all these roles simultaneously as it would **centralize the system**, defeating the purpose of a decentralized architecture. This multi-role configuration is strictly intended for **development and testing** purposes.
+This repository contains the artifacts and scripts to deploy and test the **Edaccit** pilot on top of the **Eunomia** dataspace framework. The pilot models a sustainability-data exchange: a **Provider** publishes hotel sustainability metrics (energy, water, waste, etc.) and a **Consumer** ingests them — both as participants of an Eunomia-governed dataspace.
