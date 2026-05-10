@@ -1,8 +1,8 @@
-name: ecostars-authority
+name: edaccit-authority
 
 services:
   heimdall-db:
-    container_name: ecostars-authority-heimdall-db
+    container_name: edaccit-authority-heimdall-db
     image: postgres
     restart: always
     env_file:
@@ -11,7 +11,7 @@ services:
       - "1450:5432"
 
   heimdall-setup:
-    container_name: ecostars-authority-heimdall-setup
+    container_name: edaccit-authority-heimdall-setup
     image: rmenendez8/heimdall:v2.0.2
     volumes:
       - ./../../static/config/heimdall/mini:/app/static/config
@@ -28,7 +28,7 @@ services:
     restart: "no"
 
   heimdall:
-    container_name: ecostars-authority-heimdall
+    container_name: edaccit-authority-heimdall
     image: rmenendez8/heimdall:v2.0.2
     ports:
       - "1500:1500"
