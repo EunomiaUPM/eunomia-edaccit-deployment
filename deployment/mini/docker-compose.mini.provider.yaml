@@ -64,3 +64,21 @@ services:
       - ./../../static/envs/provider/core.env.example
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  # =========================
+  # Metadata ingestion (one-shot, runs after provider is healthy)
+  # =========================
+  metadata-ingestion:
+    container_name: edaccit-metadata-ingestion
+    build:
+      context: ./../../services/metadata-ingestion
+    command:
+      - --provider-url
+      - http://provider:1200
+    volumes:
+      - ./../../services/metadata-ingestion/catalog-payloads:/app/catalog-payloads:ro
+      - ./../../services/metadata-ingestion/connector-payloads:/app/connector-payloads:ro
+    depends_on:
+      provider:
+        condition: service_started
+    restart: "no"
