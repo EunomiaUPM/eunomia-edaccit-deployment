@@ -12,10 +12,8 @@ export default defineConfig({
     // Proxy /api to the FastAPI backend during development so the browser
     // hits a single origin and CORS is never an issue.
     proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
+      '/api': { target: 'http://localhost:8000', changeOrigin: true },
+      '/arcgis-proxy': { target: 'http://localhost:8000', changeOrigin: true },
     },
   },
 })
