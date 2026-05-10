@@ -167,6 +167,51 @@ async def arcgis_proxy(path: str, request: Request) -> Response:
 
 
 # ---------------------------------------------------------------------------
+# Eunomia consumer proxy — forwards to a dataplane transfer URL (adds CORS)
+# ---------------------------------------------------------------------------
+
+
+@app.api_route("/eunomia-proxy", methods=["GET", "POST", "OPTIONS"])
+async def eunomia_proxy(target: str, request: Request) -> Response:
+    """Forward a request to an Eunomia consumer dataplane proxy URL.
+
+    The browser cannot reach the consumer directly (CORS), so the frontend
+    routes requests here.  `target` must be the full upstream URL including
+    path and query string, URL-encoded as a query parameter.
+    """
+    if request.method == "OPTIONS":
+        return Response(
+            status_code=204,
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "*",
+            },
+        )
+
+    async with httpx.AsyncClient(timeout=60) as client:
+        if request.method == "GET":
+            upstream = await client.get(target)
+        else:
+            body = await request.body()
+            upstream = await client.post(
+                target,
+                content=body,
+                headers={"content-type": request.headers.get("content-type", "")},
+            )
+
+    headers = {k: v for k, v in upstream.headers.items() if k.lower() not in _HOP_BY_HOP}
+    headers["Access-Control-Allow-Origin"] = "*"
+
+    return Response(
+        content=upstream.content,
+        status_code=upstream.status_code,
+        headers=headers,
+        media_type=upstream.headers.get("content-type"),
+    )
+
+
+# ---------------------------------------------------------------------------
 # API
 # ---------------------------------------------------------------------------
 

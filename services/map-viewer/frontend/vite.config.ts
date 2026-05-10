@@ -15,6 +15,7 @@ export default defineConfig({
     proxy: {
       '/api': { target: 'http://localhost:8000', changeOrigin: true },
       '/arcgis-proxy': { target: 'http://localhost:8000', changeOrigin: true },
+      '/eunomia-proxy': { target: 'http://localhost:8000', changeOrigin: true },
     },
   },
 })
