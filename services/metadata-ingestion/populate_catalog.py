@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run
+#!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.11"
 # dependencies = ["httpx"]
@@ -50,10 +50,10 @@ _POLICY_RE = re.compile(r"^(.+)-policy\.json$")
 _TMPL_RE = re.compile(r"^(.+)-connector-template\.json$")
 _INSTANCE_RE = re.compile(r"^(.+)-connector-instance-(\d+)\.json$")
 
-# Default payload locations relative to the repo root
-_REPO_ROOT = Path(__file__).parent
-_DEFAULT_CATALOG = _REPO_ROOT / "services/metadata-ingestion/catalog-payloads"
-_DEFAULT_CONNECTOR = _REPO_ROOT / "services/metadata-ingestion/connector-payloads"
+# Default payload locations relative to this script's directory
+_SCRIPT_DIR = Path(__file__).parent
+_DEFAULT_CATALOG = _SCRIPT_DIR / "catalog-payloads"
+_DEFAULT_CONNECTOR = _SCRIPT_DIR / "connector-payloads"
 
 
 # ---------------------------------------------------------------------------
