@@ -189,6 +189,14 @@ async def eunomia_proxy(target: str, request: Request) -> Response:
             },
         )
 
+    # When running inside Docker, "localhost" in the browser-supplied URL
+    # points to the container itself, not the host.  EUNOMIA_LOCALHOST_ALIAS
+    # (e.g. "host.docker.internal") is substituted transparently so the user
+    # can still type "localhost:1100" in the GUI.
+    localhost_alias = os.getenv("EUNOMIA_LOCALHOST_ALIAS", "")
+    if localhost_alias:
+        target = target.replace("localhost", localhost_alias, 1)
+
     async with httpx.AsyncClient(timeout=60) as client:
         if request.method == "GET":
             upstream = await client.get(target)

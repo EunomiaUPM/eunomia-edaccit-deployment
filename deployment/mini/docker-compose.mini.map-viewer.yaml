@@ -1,0 +1,26 @@
+name: edaccit-map-viewer
+
+services:
+  map-viewer:
+    container_name: edaccit-map-viewer
+    build:
+      context: ../../services/map-viewer
+      dockerfile: Dockerfile
+      args:
+        # Baked into the frontend bundle at build time.
+        # eunomia-consumer: proxy URL entered at runtime in the GUI.
+        # direct: FastAPI handles the token (dev mode).
+        VITE_AUTH_MODE: eunomia-consumer
+        VITE_ARCGIS_BASE_URL: https://edaccit.esrilab.es/server
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../../services/map-viewer/.env
+    environment:
+      # When the browser sends a proxy URL containing "localhost", FastAPI
+      # rewrites it to this alias before calling it from inside the container.
+      # host.docker.internal resolves to the Docker host on Linux and Mac.
+      EUNOMIA_LOCALHOST_ALIAS: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
