@@ -1,5 +1,5 @@
 export interface AppEnv {
-  authMode: 'direct' | 'eunomia'
+  authMode: 'direct' | 'eunomia' | 'eunomia-consumer'
   arcgisBaseUrl: string
   eunomiaConsumerUrl: string | null
 }
@@ -15,8 +15,8 @@ export function loadEnv(): AppEnv {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
   }
 
-  if (mode !== 'direct' && mode !== 'eunomia') {
-    throw new Error(`VITE_AUTH_MODE must be "direct" or "eunomia", got "${mode}"`)
+  if (mode !== 'direct' && mode !== 'eunomia' && mode !== 'eunomia-consumer') {
+    throw new Error(`VITE_AUTH_MODE must be "direct", "eunomia", or "eunomia-consumer", got "${mode}"`)
   }
 
   return {
