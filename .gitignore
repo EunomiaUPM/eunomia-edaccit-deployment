@@ -1,3 +1,4 @@
+# Vault and env secrets
 vault/**
 !vault/**/
 !vault/**/*.example
@@ -7,8 +8,31 @@ static/envs/**
 !static/envs/**/
 !static/envs/**/*.example
 
+# Key files (templates only, not real keys)
 cert.json.example
 public_key.json.example
 private_key.json.example
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.*.example
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Node
+node_modules/
+dist/
+
+# macOS
+.DS_Store
+
+# Scripts
 *.ps1
+
+# Scratch / notas locales
+/a

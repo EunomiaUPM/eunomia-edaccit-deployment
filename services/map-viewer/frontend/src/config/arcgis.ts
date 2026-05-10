@@ -42,7 +42,8 @@ export function setupArcgis(env: AppEnv): void {
   esriConfig.request.interceptors!.push({
     before: (params) => {
       if (_consumerProxyUrl && params.url.startsWith(env.arcgisBaseUrl)) {
-        params.url = _consumerProxyUrl + params.url.slice(env.arcgisBaseUrl.length);
+        const upstreamUrl = _consumerProxyUrl + params.url.slice(env.arcgisBaseUrl.length);
+        params.url = `/eunomia-proxy?target=${encodeURIComponent(upstreamUrl)}`;
       }
     },
   });
