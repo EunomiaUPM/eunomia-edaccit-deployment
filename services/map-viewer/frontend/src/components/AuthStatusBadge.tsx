@@ -1,4 +1,4 @@
-import styles from './AuthStatusBadge.module.css'
+import { Badge } from './ui/badge'
 
 interface Props {
   mode: 'direct' | 'eunomia'
@@ -6,8 +6,8 @@ interface Props {
 
 export function AuthStatusBadge({ mode }: Props) {
   return (
-    <span className={`${styles.badge} ${mode === 'eunomia' ? styles.eunomia : styles.direct}`}>
+    <Badge variant={mode === 'eunomia' ? 'success' : 'warning'}>
       {mode === 'direct' ? 'DIRECT (dev)' : 'EUNOMIA'}
-    </span>
+    </Badge>
   )
 }
