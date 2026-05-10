@@ -1,0 +1,19 @@
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.direct {
+  background: #fff3cd;
+  color: #7c5800;
+}
+
+.eunomia {
+  background: #d1e7dd;
+  color: #0a5c36;
+}
