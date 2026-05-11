@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Layers } from "lucide-react";
+import { Layers, RefreshCw } from "lucide-react";
 import { ArcgisMapView } from "./components/ArcgisMapView";
 import { LayerList } from "./components/LayerList";
 import { ModePanel, type RuntimeMode } from "./components/ModePanel";
@@ -24,6 +24,7 @@ export default function App({ env }: Props) {
     return initialMode;
   });
   const [activeProxyUrl, setActiveProxyUrl] = useState<string | null>(null);
+  const [reloadCount, setReloadCount] = useState(0);
 
   function handleModeChange(mode: RuntimeMode) {
     setRuntimeMode(mode);
@@ -82,9 +83,18 @@ export default function App({ env }: Props) {
           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
             Capas
           </span>
-          <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
-            {activeLayers.length} / {LAYER_CATALOG.length} activas
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
+              {activeLayers.length} / {LAYER_CATALOG.length} activas
+            </span>
+            <button
+              onClick={() => setReloadCount((n) => n + 1)}
+              title="Recargar datos"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <RefreshCw className="h-3 w-3" />
+            </button>
+          </div>
         </div>
 
         <LayerList
@@ -103,7 +113,7 @@ export default function App({ env }: Props) {
       <div className="flex-1 relative min-w-0">
         {/* key forces a full MapView remount when the active proxy URL changes */}
         <ArcgisMapView
-          key={`${runtimeMode}:${activeProxyUrl ?? ""}`}
+          key={`${runtimeMode}:${activeProxyUrl ?? ""}:${reloadCount}`}
           activeLayers={runtimeMode === "eunomia-consumer" && !activeProxyUrl ? [] : activeLayers}
         />
       </div>
