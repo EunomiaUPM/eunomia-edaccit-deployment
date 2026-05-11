@@ -174,7 +174,7 @@
         "@language": "es"
       },
       "dcat:accessURL": {
-        "@id": "https://www.arcgis.com/home/item.html?id=a8b2fbacecc347acb1ef013c48bb25f9"
+        "@id": "https://edaccit.esrilab.es/server"
       },
       "dct:format": {
         "@id": "http://publications.europa.eu/resource/authority/file-type/JSON"

@@ -6,8 +6,14 @@
 """
 convert_connectors.py — DCAT-AP JSON-LD → Eunomia connector payloads
 =====================================================================
-Reads every .jsonld file under ./metadata/ and writes three kinds of
-Eunomia connector payloads to ./connector-payloads/ (or a custom dir):
+Reads every .jsonld file under ./metadata/ and writes connector payloads
+to ./connector-payloads/ (or a custom dir):
+
+  connector-template.json                          (written once, shared)
+      POST to /api/v1/connector/template
+      API_KEY / HTTP PULL template. Accepts ACCESS_URL, API_KEY, and API_VALUE
+      as runtime parameters. The {{...}} placeholders are Eunomia's template
+      syntax — resolved when a connector instance is created.
 
   {dataset-id}-policy.json
       POST to /api/v1/catalog/policy
@@ -15,24 +21,15 @@ Eunomia connector payloads to ./connector-payloads/ (or a custom dir):
         PUBLIC     → permission: [use] with no constraints
         RESTRICTED → prohibition: [use] (constraints must be filled in manually)
 
-  {dataset-id}-connector-template.json
-      POST to /api/v1/connector/template
-      Static NO_AUTH / HTTP PULL template. The {{...}} placeholders are
-      Eunomia's own template syntax — they are resolved at runtime when a
-      connector instance is created, not by this script.
-
   {dataset-id}-connector-instance-{n}.json
       POST to /api/v1/connector/instance  (one file per dcat:distribution)
-      Binds the template to a specific distribution:
-        dcat:accessURL  → parameters.ACCESS_URL   (real endpoint URL)
-        dcat:mediaType  → ACCESS_HEADERS.Accept   (derived MIME type)
+      Binds the shared template to a specific distribution:
+        dcat:accessURL → parameters.ACCESS_URL
 
 Placeholders that must be replaced before posting to the API:
-  __DATASET_ID__        — ID returned after POSTing the dataset payload
-  __DISTRIBUTION_ID__   — ID returned after POSTing the distribution payload
-  __CONN_PULL_NAME__    — name under which the connector template was registered
-  __CONN_PULL_VERSION__ — version of that registered template
-  __OWNER_ID__          — participant/organisation identifier in Eunomia
+  __OWNER_ID__   — participant/organisation identifier in Eunomia
+  __API_VALUE__  — API key value (token secret); also injectable via --api-value CLI flag
+                   or the API_VALUE environment variable in populate_catalog.py
 
 Usage:
     ./convert_connectors.py
@@ -50,20 +47,12 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 def get_types(node: dict) -> list[str]:
-    # @type can be a bare string or a list; normalise to list for uniform checks
     t = node.get("@type", "")
     return [t] if isinstance(t, str) else list(t)
 
 
 def get_text(val) -> str | None:
-    """Return the plain-string content of a JSON-LD value node.
-
-    Handles the three compact patterns used in these files:
-      - plain string           → returned as-is
-      - {"@value": "...", ...} → language-tagged literal, first element taken
-      - {"@id": "..."}         → named resource, URI returned
-    When the value is a list the first element is used (preferred language).
-    """
+    """Return the plain-string content of a JSON-LD value node."""
     if isinstance(val, str):
         return val
     if isinstance(val, dict):
@@ -80,9 +69,6 @@ def is_public(node: dict) -> bool:
     access_rights = get_text(node.get("dct:accessRights"))
     if not access_rights:
         return False
-    # Compare only the last URI segment (e.g. "PUBLIC", "RESTRICTED") to avoid
-    # false positives: the base URI path contains "publications.europa.eu",
-    # which would match a naive substring search for "PUBLIC".
     segment = access_rights.rstrip("/").rsplit("/", 1)[-1].upper()
     return segment == "PUBLIC"
 
@@ -96,14 +82,10 @@ def policy_payload(dataset: dict) -> dict:
     public = is_public(dataset)
 
     if public:
-        # Unrestricted use: no temporal, purpose, or count constraints.
-        # Add constraint objects here if finer-grained control is needed.
         permission = [{"action": "use", "constraint": []}]
         prohibition = []
         description = f"Open access policy for '{title}'. Data is publicly available."
     else:
-        # Blocked by default: the operator must define the actual permission
-        # constraints (purpose, dateTime, count, …) before activating this policy.
         permission = []
         prohibition = [{"action": "use", "constraint": []}]
         description = f"Restricted access policy for '{title}'. Access conditions must be defined."
@@ -121,27 +103,39 @@ def policy_payload(dataset: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Connector template  (static — same structure for all pull datasets)
+# Shared connector template  (API_KEY / HTTP PULL — one file for all datasets)
 # ---------------------------------------------------------------------------
 
-# NO_AUTH / HTTP PULL template.  The {{__PARAM__}} syntax is Eunomia's runtime
+# API_KEY query-param auth. The {{__PARAM__}} syntax is Eunomia's runtime
 # template notation: values are substituted when a connector instance is POSTed
 # with the matching parameter names in its "parameters" object.
-CONNECTOR_TEMPLATE_PULL = {
-    "authentication": {"type": "NO_AUTH"},
+#
+# API_KEY defaults to "token" (the ArcGIS token query param name), so instances
+# only need to supply ACCESS_URL and API_VALUE.
+CONNECTOR_TEMPLATE_API_KEY = {
+    "authentication": {
+        "type": "API_KEY",
+        "key": "{{__API_KEY__}}",
+        "value": {
+            "type": "PLAIN",
+            "content": "{{__API_VALUE__}}",
+        },
+        "location": "QUERY",
+    },
     "interaction": {
         "mode": "PULL",
         "dataAccess": {
             "protocol": "HTTP",
             "urlTemplate": "{{__ACCESS_URL__}}",
-            "method": "{{__ACCESS_METHODS__}}",
-            "headers": "{{__ACCESS_HEADERS__}}",
+            "method": ["GET", "POST"],
+            "headers": {"Accept": "application/json"},
+            "bodyTemplate": None,
         },
     },
     "parameters": [
-        {"paramType": "STRING",           "name": "ACCESS_URL",     "title": "Url",     "required": True},
-        {"paramType": "VEC<STRING>",       "name": "ACCESS_METHODS", "title": "Methods", "required": True},
-        {"paramType": "MAP<STRING,STRING>","name": "ACCESS_HEADERS", "title": "Headers", "required": True},
+        {"paramType": "STRING", "name": "ACCESS_URL", "title": "Access URL", "required": True},
+        {"paramType": "STRING", "name": "API_KEY",    "title": "Api key",    "required": False, "defaultValue": "token"},
+        {"paramType": "STRING", "name": "API_VALUE",  "title": "Api value",  "required": True},
     ],
 }
 
@@ -150,34 +144,12 @@ CONNECTOR_TEMPLATE_PULL = {
 # Connector instance payload
 # ---------------------------------------------------------------------------
 
-def derive_accept_header(dist_node: dict) -> str | None:
-    """Extract a MIME type string from dcat:mediaType for use as Accept header.
-
-    dcat:mediaType is typically an IANA URI such as:
-      https://www.iana.org/assignments/media-types/application/gml+xml
-    Only the trailing MIME type segment is kept (e.g. "application/gml+xml").
-    If the value is already a plain MIME type it is returned unchanged.
-    """
-    media_type = get_text(dist_node.get("dcat:mediaType"))
-    if not media_type:
-        return None
-    if "/assignments/media-types/" in media_type:
-        return media_type.split("/assignments/media-types/")[-1]
-    return media_type
-
-
 def connector_instance_payload(dist_node: dict) -> dict:
     access_url = get_text(dist_node.get("dcat:accessURL"))
-    # Use the distribution description as the human-readable connector note;
-    # fall back to the title when no description is present.
     description = (
         get_text(dist_node.get("dct:description"))
         or get_text(dist_node.get("dct:title"))
     )
-    accept = derive_accept_header(dist_node)
-    # Only include Accept if a MIME type could be derived; an empty headers
-    # map is still valid and required by the connector template parameter.
-    headers = {"Accept": accept} if accept else {}
 
     return {
         "templateName": "__CONN_PULL_NAME__",
@@ -187,13 +159,10 @@ def connector_instance_payload(dist_node: dict) -> dict:
             "description": description,
             "ownerId": "__OWNER_ID__",
         },
-        # dryRun: false — set to true to validate the instance without
-        # activating the connector in the Eunomia runtime.
         "dryRun": False,
         "parameters": {
             "ACCESS_URL": access_url or "__ACCESS_URL__",
-            "ACCESS_METHODS": ["GET"],
-            "ACCESS_HEADERS": headers,
+            "API_VALUE": "__API_VALUE__",
         },
     }
 
@@ -204,12 +173,9 @@ def connector_instance_payload(dist_node: dict) -> dict:
 
 def process_file(path: Path, output_dir: Path) -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
-    # @graph is a flat list of all typed nodes (Dataset, Distribution,
-    # DataService, CatalogRecord, …) sharing a common @context.
     graph: list[dict] = data.get("@graph", [])
 
     datasets = [n for n in graph if "dcat:Dataset" in get_types(n)]
-    # Index distributions by @id for O(1) lookup when iterating dataset refs.
     dist_by_id = {n["@id"]: n for n in graph if "dcat:Distribution" in get_types(n)}
 
     if not datasets:
@@ -217,8 +183,6 @@ def process_file(path: Path, output_dir: Path) -> None:
         return
 
     for dataset in datasets:
-        # Prefer dct:identifier (stable, human-readable) over the last segment
-        # of the @id URI, which can be long or contain encoded characters.
         dataset_id = (
             dataset.get("dct:identifier")
             or dataset["@id"].rsplit(":", 1)[-1]
@@ -232,17 +196,7 @@ def process_file(path: Path, output_dir: Path) -> None:
         )
         print(f"  {pol_out.name}")
 
-        # --- Connector template (NO_AUTH PULL — same structure per dataset) --
-        tpl_out = output_dir / f"{dataset_id}-connector-template.json"
-        tpl_out.write_text(
-            json.dumps(CONNECTOR_TEMPLATE_PULL, indent=2, ensure_ascii=False),
-            encoding="utf-8",
-        )
-        print(f"  {tpl_out.name}")
-
         # --- Connector instances (one per dcat:distribution reference) -------
-        # The DCAT-AP spec allows a single distribution to be expressed as an
-        # object instead of a one-element list; normalise to list.
         dist_refs = dataset.get("dcat:distribution", [])
         if isinstance(dist_refs, dict):
             dist_refs = [dist_refs]
@@ -288,6 +242,20 @@ def main() -> None:
         print(f"No .jsonld files found in {metadata_dir}", file=sys.stderr)
         sys.exit(1)
 
+    # --- Shared connector template (written once) ----------------------------
+    print("\nShared connector template")
+    stale = list(output_dir.glob("*-connector-template.json"))
+    for old in stale:
+        old.unlink()
+        print(f"  [removed] {old.name}")
+    tpl_out = output_dir / "connector-template.json"
+    tpl_out.write_text(
+        json.dumps(CONNECTOR_TEMPLATE_API_KEY, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    print(f"  {tpl_out.name}")
+
+    # --- Per-dataset: policy + connector instances ---------------------------
     for path in jsonld_files:
         print(f"\n{path.name}")
         process_file(path, output_dir)

@@ -1,0 +1,45 @@
+{
+  "authentication": {
+    "type": "API_KEY",
+    "key": "{{__API_KEY__}}",
+    "value": {
+      "type": "PLAIN",
+      "content": "{{__API_VALUE__}}"
+    },
+    "location": "QUERY"
+  },
+  "interaction": {
+    "mode": "PULL",
+    "dataAccess": {
+      "protocol": "HTTP",
+      "urlTemplate": "{{__ACCESS_URL__}}",
+      "method": [
+        "GET",
+        "POST"
+      ],
+      "headers": null,
+      "bodyTemplate": null
+    }
+  },
+  "parameters": [
+    {
+      "paramType": "STRING",
+      "name": "ACCESS_URL",
+      "title": "Access URL",
+      "required": true
+    },
+    {
+      "paramType": "STRING",
+      "name": "API_KEY",
+      "title": "Api key",
+      "required": false,
+      "defaultValue": "token"
+    },
+    {
+      "paramType": "STRING",
+      "name": "API_VALUE",
+      "title": "Api value",
+      "required": true
+    }
+  ]
+}
