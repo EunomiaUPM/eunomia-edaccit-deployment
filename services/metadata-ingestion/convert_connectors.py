@@ -128,7 +128,7 @@ CONNECTOR_TEMPLATE_API_KEY = {
             "protocol": "HTTP",
             "urlTemplate": "{{__ACCESS_URL__}}",
             "method": ["GET", "POST"],
-            "headers": {"Accept": "application/json"},
+            "headers": None,
             "bodyTemplate": None,
         },
     },
