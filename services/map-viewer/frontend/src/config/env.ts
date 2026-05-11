@@ -5,14 +5,11 @@ export interface AppEnv {
 }
 
 export function loadEnv(): AppEnv {
-  const mode = import.meta.env.VITE_AUTH_MODE
+  const mode = (import.meta.env.VITE_AUTH_MODE ?? 'direct') as string
   const baseUrl = import.meta.env.VITE_ARCGIS_BASE_URL
 
-  const missing: string[] = []
-  if (!mode) missing.push('VITE_AUTH_MODE')
-  if (!baseUrl) missing.push('VITE_ARCGIS_BASE_URL')
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
+  if (!baseUrl) {
+    throw new Error('Missing required environment variable: VITE_ARCGIS_BASE_URL')
   }
 
   if (mode !== 'direct' && mode !== 'eunomia' && mode !== 'eunomia-consumer') {
