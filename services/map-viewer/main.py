@@ -197,13 +197,19 @@ async def eunomia_proxy(target: str, request: Request) -> Response:
     if localhost_alias:
         target = target.replace("localhost", localhost_alias, 1)
 
+    # The ArcGIS SDK appends query params (e.g. f=json) after the interceptor
+    # rewrites params.url, so they arrive here as extra params alongside 'target'.
+    # Forward them to the upstream so the consumer proxy receives them intact.
+    extra_params = [(k, v) for k, v in request.query_params.multi_items() if k != "target"]
+
     async with httpx.AsyncClient(timeout=60) as client:
         if request.method == "GET":
-            upstream = await client.get(target)
+            upstream = await client.get(target, params=extra_params)
         else:
             body = await request.body()
             upstream = await client.post(
                 target,
+                params=extra_params,
                 content=body,
                 headers={"content-type": request.headers.get("content-type", "")},
             )

@@ -9,11 +9,6 @@
   "dryRun": false,
   "parameters": {
     "ACCESS_URL": "https://opendap.puertos.es/thredds/catalog/circulation_coastal_pam/latest-files/catalog.html?dataset=circulation_coastal_pam/latest-files/FC-lastcycle-daily.nc",
-    "ACCESS_METHODS": [
-      "GET"
-    ],
-    "ACCESS_HEADERS": {
-      "Accept": "application/netcdf"
-    }
+    "API_VALUE": "__API_VALUE__"
   }
 }
