@@ -5,9 +5,14 @@ import { getToken } from "../services/auth";
 esriConfig.assetsPath = "https://js.arcgis.com/4.34/@arcgis/core/assets/";
 
 let _consumerProxyUrl: string | null = null;
+let _eunomiaConsumerMode = false;
 
 export function setConsumerProxyUrl(url: string | null): void {
   _consumerProxyUrl = url;
+}
+
+export function setEunomiaConsumerMode(enabled: boolean): void {
+  _eunomiaConsumerMode = enabled;
 }
 
 export function setupArcgis(env: AppEnv): void {
@@ -37,11 +42,19 @@ export function setupArcgis(env: AppEnv): void {
   }
 
   // direct / eunomia-consumer: register a proxy-rewrite interceptor.
-  // It is a no-op while _consumerProxyUrl is null (DIRECT mode in the GUI).
-  // Calling setConsumerProxyUrl(url) activates it without re-registering.
+  // In eunomia-consumer mode, all requests to arcgisBaseUrl must go through
+  // the consumer proxy — never through /arcgis-proxy (which injects credentials).
+  // If no consumer URL is configured yet, the request is aborted.
   esriConfig.request.interceptors!.push({
     before: (params) => {
-      if (_consumerProxyUrl && params.url.startsWith(env.arcgisBaseUrl)) {
+      if (!params.url.startsWith(env.arcgisBaseUrl)) return;
+
+      if (_eunomiaConsumerMode && !_consumerProxyUrl) {
+        // No proxy connected yet — abort so requests don't fall through to /arcgis-proxy.
+        throw new Error("Eunomia consumer proxy not connected");
+      }
+
+      if (_consumerProxyUrl) {
         const upstreamUrl = _consumerProxyUrl + params.url.slice(env.arcgisBaseUrl.length);
         params.url = `/eunomia-proxy?target=${encodeURIComponent(upstreamUrl)}`;
       }

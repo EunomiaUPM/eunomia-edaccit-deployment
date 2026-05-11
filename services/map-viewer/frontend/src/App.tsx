@@ -3,7 +3,7 @@ import { Layers } from "lucide-react";
 import { ArcgisMapView } from "./components/ArcgisMapView";
 import { LayerList } from "./components/LayerList";
 import { ModePanel, type RuntimeMode } from "./components/ModePanel";
-import { setConsumerProxyUrl } from "./config/arcgis";
+import { setConsumerProxyUrl, setEunomiaConsumerMode } from "./config/arcgis";
 import { LAYER_CATALOG } from "./config/layers";
 import type { AppEnv } from "./config/env";
 
@@ -19,11 +19,15 @@ export default function App({ env }: Props) {
 
   const initialMode: RuntimeMode =
     env.authMode === "eunomia-consumer" ? "eunomia-consumer" : "direct";
-  const [runtimeMode, setRuntimeMode] = useState<RuntimeMode>(initialMode);
+  const [runtimeMode, setRuntimeMode] = useState<RuntimeMode>(() => {
+    setEunomiaConsumerMode(initialMode === "eunomia-consumer");
+    return initialMode;
+  });
   const [activeProxyUrl, setActiveProxyUrl] = useState<string | null>(null);
 
   function handleModeChange(mode: RuntimeMode) {
     setRuntimeMode(mode);
+    setEunomiaConsumerMode(mode === "eunomia-consumer");
     if (mode === "direct") {
       setConsumerProxyUrl(null);
       setActiveProxyUrl(null);
@@ -100,7 +104,7 @@ export default function App({ env }: Props) {
         {/* key forces a full MapView remount when the active proxy URL changes */}
         <ArcgisMapView
           key={`${runtimeMode}:${activeProxyUrl ?? ""}`}
-          activeLayers={activeLayers}
+          activeLayers={runtimeMode === "eunomia-consumer" && !activeProxyUrl ? [] : activeLayers}
         />
       </div>
     </div>
