@@ -1,0 +1,20 @@
+name: edaccit-map-viewer
+
+services:
+  map-viewer:
+    container_name: edaccit-map-viewer
+    build:
+      context: ../../services/map-viewer
+      dockerfile: Dockerfile
+      args:
+        VITE_ARCGIS_BASE_URL: https://edaccit.esrilab.es/server
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../../services/map-viewer/.env
+    environment:
+      # rewrite localhost as:
+      EUNOMIA_LOCALHOST_ALIAS: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
