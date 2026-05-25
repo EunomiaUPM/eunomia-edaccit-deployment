@@ -1,0 +1,114 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deploying env"
+        required: true
+        default: prod
+        type: choice
+        options:
+          - prod
+          - mini
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Determina qué compose file usar según entorno
+  # ──────────────────────────────────────────────
+  resolve-env:
+    runs-on: ubuntu-latest
+    outputs:
+      consumer_compose: ${{ steps.paths.outputs.consumer_compose }}
+      provider_compose: ${{ steps.paths.outputs.provider_compose }}
+      environment: ${{ steps.paths.outputs.environment }}
+    steps:
+      - name: Resolver rutas de compose
+        id: paths
+        run: |
+          # Dispatch a command based on mini (staging envs) or prod
+          ENV="${{ github.event.inputs.environment || 'prod' }}"
+          echo "environment=$ENV" >> "$GITHUB_OUTPUT"
+
+          if [ "$ENV" = "prod" ]; then
+            echo "consumer_compose=deployment/prod/docker-compose.consumer.yaml" >> "$GITHUB_OUTPUT"
+            echo "provider_compose=deployment/prod/docker-compose.provider.yaml" >> "$GITHUB_OUTPUT"
+          else
+            echo "consumer_compose=deployment/mini/docker-compose.mini.consumer.yaml" >> "$GITHUB_OUTPUT"
+            echo "provider_compose=deployment/mini/docker-compose.mini.provider.yaml" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ──────────────────────────────────────────────
+  # Máquina A — Consumer
+  # ──────────────────────────────────────────────
+  deploy-consumer:
+    runs-on: ubuntu-latest
+    needs: resolve-env
+    environment: ${{ needs.resolve-env.outputs.environment }}
+    steps:
+      - name: Deploy consumer via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.CONSUMER_HOST }}
+          username: ${{ secrets.CONSUMER_USER }}
+          key: ${{ secrets.CONSUMER_SSH_KEY }}
+          port: ${{ secrets.CONSUMER_SSH_PORT || 22 }}
+          script: |
+            set -e
+            cd "${{ secrets.DEPLOY_PATH }}"
+
+            echo "==> Updating repo"
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "==> Authz in quay.io"
+            echo "${{ secrets.QUAY_PASSWORD }}" | \
+              docker login quay.io -u "${{ secrets.QUAY_USER }}" --password-stdin
+
+            echo "==> Getting image"
+            docker compose -f ${{ needs.resolve-env.outputs.consumer_compose }} pull
+
+            echo "==> Setting ds-agent up"
+            docker compose -f ${{ needs.resolve-env.outputs.consumer_compose }} up -d --remove-orphans
+
+            echo "==> Final docker state"
+            docker compose -f ${{ needs.resolve-env.outputs.consumer_compose }} ps
+
+  # ──────────────────────────────────────────────
+  # Máquina B — Provider
+  # ──────────────────────────────────────────────
+  deploy-provider:
+    runs-on: ubuntu-latest
+    needs: resolve-env
+    environment: ${{ needs.resolve-env.outputs.environment }}
+    steps:
+      - name: Deploy provider via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.PROVIDER_HOST }}
+          username: ${{ secrets.PROVIDER_USER }}
+          key: ${{ secrets.PROVIDER_SSH_KEY }}
+          port: ${{ secrets.PROVIDER_SSH_PORT || 22 }}
+          script: |
+            set -e
+            cd "${{ secrets.DEPLOY_PATH }}"
+
+            echo "==> Updating repo"
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "==> Authz in quay.io"
+            echo "${{ secrets.QUAY_PASSWORD }}" | \
+              docker login quay.io -u "${{ secrets.QUAY_USER }}" --password-stdin
+
+            echo "==> Getting image"
+            docker compose -f ${{ needs.resolve-env.outputs.provider_compose }} pull
+
+            echo "==> Setting ds-agent up"
+            docker compose -f ${{ needs.resolve-env.outputs.provider_compose }} up -d --remove-orphans
+
+            echo "==> Final docker state"
+            docker compose -f ${{ needs.resolve-env.outputs.provider_compose }} ps
