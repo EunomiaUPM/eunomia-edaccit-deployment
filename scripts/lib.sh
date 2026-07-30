@@ -11,6 +11,49 @@ log_success() { echo -e "\033[32m$1\033[0m" >&2; }
 log_error()   { echo -e "\033[31m$1\033[0m" >&2; exit 1; }
 log_info()    { echo -e "\033[33m$1\033[0m" >&2; }
 
+# ---------------------------------------------------------------------------
+# ArcGIS environment
+# ---------------------------------------------------------------------------
+# Loads services/map-viewer/.env and applies the ARCGIS_* defaults.
+# Variables already exported in the shell take precedence over the file.
+load_arcgis_env() {
+    local lib_dir repo_root env_file key value
+    lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    repo_root="$(cd "${lib_dir}/.." && pwd)"
+    env_file="${repo_root}/services/map-viewer/.env"
+
+    if [[ -f "${env_file}" ]]; then
+        while IFS='=' read -r key value; do
+            [[ "${key}" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "${key// /}" ]] && continue
+            key="${key// /}"
+
+            if [[ "${value}" =~ ^[[:space:]]*\"(.*)\"[[:space:]]*$ || \
+                  "${value}" =~ ^[[:space:]]*\'(.*)\'[[:space:]]*$ ]]; then
+                # Quoted value: take it verbatim, '#' inside is not a comment
+                value="${BASH_REMATCH[1]}"
+            else
+                # Unquoted: ' #' starts an inline comment, then trim whitespace.
+                # A bare '#' is kept, so passwords containing it survive.
+                value="${value%%[[:space:]]#*}"
+                value="${value#"${value%%[![:space:]]*}"}"
+                value="${value%"${value##*[![:space:]]}"}"
+            fi
+
+            # Only set if the variable is not already in the environment
+            if [[ -z "${!key+x}" ]]; then
+                export "${key}=${value}"
+            fi
+        done < "${env_file}"
+    fi
+
+    export ARCGIS_PORTAL_URL="${ARCGIS_PORTAL_URL:-https://edaccit.esrilab.es/portal}"
+    export ARCGIS_SERVER_URL="${ARCGIS_SERVER_URL:-https://edaccit.esrilab.es/server}"
+    export ARCGIS_TOKEN_EXPIRY="${ARCGIS_TOKEN_EXPIRY:-120}"
+    export ARCGIS_REFERER="${ARCGIS_REFERER:-https://edaccit.esrilab.es}"
+    export ARCGIS_VERIFY_SSL="${ARCGIS_VERIFY_SSL:-true}"
+}
+
 curl_raw() {
     local method=${1:-GET}
     local url=$2
