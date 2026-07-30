@@ -74,6 +74,8 @@ services:
     container_name: edaccit-metadata-ingestion
     build:
       context: ./../../services/metadata-ingestion
+    environment:
+      API_VALUE: ${API_VALUE:?token ArcGIS required - get it with scripts/ingest-arcgis-token.sh}
     command:
       - --provider-url
       - http://provider:1200

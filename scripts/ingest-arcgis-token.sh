@@ -41,7 +41,7 @@ if [[ -f "${ENV_FILE}" ]]; then
 fi
 
 ARCGIS_PORTAL_URL="${ARCGIS_PORTAL_URL:-https://edaccit.esrilab.es/portal}"
-ARCGIS_TOKEN_EXPIRY="${ARCGIS_TOKEN_EXPIRY:-120}"
+ARCGIS_TOKEN_EXPIRY="${ARCGIS_TOKEN_EXPIRY:-525600}"
 ARCGIS_REFERER="${ARCGIS_REFERER:-https://edaccit.esrilab.es}"
 ARCGIS_VERIFY_SSL="${ARCGIS_VERIFY_SSL:-true}"
 
