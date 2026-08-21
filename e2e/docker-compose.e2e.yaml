@@ -1,0 +1,14 @@
+name: edaccit-e2e
+
+services:
+  e2e:
+    container_name: edaccit-e2e
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      CONSUMER_URL: http://host.docker.internal:1100
+      PROVIDER_URL: http://host.docker.internal:1200
+      DOCKER_CONSUMER_URL: http://host.docker.internal:1100
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

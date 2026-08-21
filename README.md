@@ -247,6 +247,39 @@ http://localhost:1100/dataplane/proxy/urn:dataplane-transfer:<uuid>
 
 Open the Map Viewer at `http://localhost:8000`, switch the sidebar toggle to **EUNOMIA**, paste the URL, and click **Conectar**. The SDK will route all layer requests through the Consumer's transfer endpoint — the ArcGIS token is injected by the Provider Agent and never reaches the browser.
 
+### Automated end-to-end test
+
+`e2e/` drives the whole flow above over the API instead of the UI: catalog request, the eight-step DSP contract negotiation, the transfer process, a real data fetch through the dataplane proxy, and suspend/resume/complete. It asserts the state reached at every step and exits non-zero on the first failure.
+
+It runs inside a container, so **Docker is the only requirement** — no Python or shell needed on the machine, which is what makes it usable on the Windows production host.
+
+Two entry points, differing only in what happens to the transfer at the end — `run-complete` finishes the lifecycle, `run-keep-open` stops at `STARTED` and prints the dataplane proxy URL for the Map Viewer:
+
+```bat
+REM Windows (cmd or PowerShell)
+e2e\run-complete.bat
+e2e\run-keep-open.bat
+```
+
+```bash
+# macOS / Linux
+./e2e/run-complete.sh
+./e2e/run-keep-open.sh
+```
+
+Each is a one-line call to `docker compose -f e2e/docker-compose.e2e.yaml run --rm --build e2e`, which you can use directly if you prefer.
+
+It assumes `deploy-mini.sh` already ran (agents up, participants onboarded, catalog populated) and checks that before starting. It negotiates the **Red de ferrocarriles de España – Estaciones** dataset — the one whose connector points at the ESRILab ArcGIS server, so the fetch also proves the Provider injected the token (an anonymous caller gets the same `200` with an empty service list).
+
+Arguments are forwarded to the test:
+
+```bat
+e2e\run-complete.bat --list-datasets    REM what the catalog offers
+e2e\run-complete.bat -v                 REM dump every DSP request and response
+```
+
+See [`e2e/README.md`](e2e/README.md) for the full option list, how to point it at a remote deployment, and how to run the script without Docker.
+
 ### Verifying ArcGIS connectivity
 
 Use the smoke test script to check that the ESRILab server is reachable and the token flow works independently of the dataspace:
