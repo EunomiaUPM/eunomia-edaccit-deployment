@@ -129,11 +129,14 @@ services:
     build:
       context: ./../../services/metadata-ingestion
     environment:
-      API_VALUE: ${API_VALUE:?token ArcGIS required - get it with scripts/ingest-arcgis-token.sh}
+      API_VALUE: ${API_VALUE:?token ArcGIS required - get it with scripts/arcgis-token.sh}
+    entrypoint: ["sh", "/app/entrypoint.sh"]
     command:
       - --provider-url
       - http://provider:1200
     volumes:
+      - ./../../services/metadata-ingestion/populate_catalog.py:/app/populate_catalog.py:ro
+      - ./../../services/metadata-ingestion/entrypoint.sh:/app/entrypoint.sh:ro
       - ./../../services/metadata-ingestion/catalog-payloads:/app/catalog-payloads:ro
       - ./../../services/metadata-ingestion/connector-payloads:/app/connector-payloads:ro
     depends_on:

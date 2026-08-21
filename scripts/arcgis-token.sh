@@ -7,7 +7,7 @@
 #   export API_VALUE=$(./scripts/arcgis-token.sh)
 #   docker compose -f deployment/mini/docker-compose.mini.provider.yaml up
 #
-# Credentials are read from services/map-viewer/.env. Any variable already
+# Credentials are read from the repo-root .env. Any variable already
 # exported in the shell takes precedence over the file.
 #
 # Usage:
@@ -25,7 +25,7 @@ source "${SCRIPT_DIR}/lib.sh"
 load_arcgis_env
 
 if [[ -z "${ARCGIS_USERNAME:-}" || -z "${ARCGIS_PASSWORD:-}" ]]; then
-    log_error "ARCGIS_USERNAME and ARCGIS_PASSWORD must be set (via env or services/map-viewer/.env)"
+    log_error "ARCGIS_USERNAME and ARCGIS_PASSWORD must be set (via env or the repo-root .env)"
 fi
 
 CURL_OPTS=(-s)

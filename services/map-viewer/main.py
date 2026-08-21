@@ -13,7 +13,7 @@ Run (development):
 Run (production, after building the frontend):
     uvicorn main:app --host 0.0.0.0 --port 8000
 
-Environment variables (see .env.example):
+Environment variables (see .env.example at the repo root):
     ARCGIS_PORTAL_URL   — ESRILab portal root, e.g. https://edaccit.esrilab.es/portal
     ARCGIS_USERNAME     — service account username
     ARCGIS_PASSWORD     — service account password

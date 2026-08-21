@@ -85,55 +85,130 @@ Metadata is authored as DCAT-AP 3.0.1 JSON-LD files in [`services/metadata-inges
 
 ---
 
-## Setup
-
-### 1 — Dataspace infrastructure
-
-Bring up Heimdall and both dataspace agents. Each runs in its own Compose stack inside [`deployment/mini/`](deployment/mini/):
+## Quick start
 
 ```bash
-docker compose -f deployment/mini/docker-compose.mini.heimdall.yaml up -d
-docker compose -f deployment/mini/docker-compose.mini.provider.yaml up -d
-docker compose -f deployment/mini/docker-compose.mini.consumer.yaml up -d
+git clone https://github.com/EunomiaUPM/eunomia-edaccit-deployment.git
+cd eunomia-edaccit-deployment
+cp .env.example .env          # fill in your ArcGIS credentials
+./scripts/deploy-mini.sh
 ```
 
-The provider stack includes a one-shot `metadata-ingestion` service that automatically populates the catalog on first startup. If you need to re-run it manually:
+> [!NOTE]
+> `.env` holds ArcGIS credentials and is git-ignored, so it is never shipped with the repo:
+> every machine needs its own copy from `.env.example`.
+
+That's it. Roughly three minutes later you have the authority, both agents, their wallets,
+the ingested catalog and the map viewer running, with onboarding done.
+
+### What just happened
+
+`deploy-mini.sh` runs the whole sequence so you don't have to:
+
+1. **ArcGIS token** — mints one via `scripts/arcgis-token.sh` and exports it as `API_VALUE`.
+   The token is baked into every connector instance, so ingestion needs it up front.
+2. **Authority** — Heimdall plus its Fafnir wallet and Postgres.
+3. **Provider** — agent, wallet, Postgres, Redis, and the one-shot `metadata-ingestion`
+   job that populates the catalog.
+4. **Consumer** — same shape, minus the ingestion.
+5. **Map viewer** — built and served on port 8000.
+6. **Onboarding** — links the three wallets, gets both participants a
+   `DataSpaceParticipant` credential from the authority, and completes the
+   consumer↔provider GNAP handshake.
+
+Every step is idempotent, so this is also the **update path**:
 
 ```bash
-bash scripts/ingest.sh
+git pull
+./scripts/deploy-mini.sh
 ```
 
-### 2 — Onboarding
+The catalog is not duplicated, and participants that already hold their credential are
+left alone.
 
-Once all three stacks are healthy, register both participants with the authority and establish mutual trust:
+Flags: `--no-map-viewer`, `--no-onboarding`. Set `API_VALUE` beforehand to reuse a token
+you already have.
 
-```bash
-bash scripts/mini-onboarding.sh
-```
+> [!IMPORTANT]
+> Docker publishes these ports on IPv6 as well as IPv4. If a natively built `monolith` or
+> `heimdall` is still listening on 1100/1200/1500, `127.0.0.1:<port>` reaches that process
+> instead of the container, while the container still looks perfectly healthy.
+> `deploy-mini.sh` refuses to start when it detects one.
 
-This runs three steps in sequence:
+---
 
-1. **Link wallets** — connects each agent to its DID wallet.
-2. **Register with authority** — Consumer and Provider obtain a `DataSpaceParticipant` credential from Heimdall.
-3. **Authenticate participants** — Consumer discovers and authenticates with the Provider.
+## Scripts
 
-Override default URLs if your setup differs:
+| Script | What it does |
+| ------ | ------------ |
+| [`deploy-mini.sh`](scripts/deploy-mini.sh) | **Start here.** Token → all four stacks → onboarding. Idempotent; also the update path. `--no-map-viewer`, `--no-onboarding`. |
+| [`mini-onboarding.sh`](scripts/mini-onboarding.sh) | Onboarding only: links wallets, then runs the two scripts below. Safe to re-run. |
+| [`register-with-authority.sh`](scripts/register-with-authority.sh) | Gets one participant a `DataSpaceParticipant` credential from Heimdall. Needs `PARTICIPANT_URL`; `PARTICIPANT_NICK` labels the logs. Skips if already held. |
+| [`authenticate-participants.sh`](scripts/authenticate-participants.sh) | Runs the GNAP handshake that mints the consumer's mate token for the provider. Skips if already authenticated. |
+| [`arcgis-token.sh`](scripts/arcgis-token.sh) | Prints an ArcGIS token to stdout, nothing else — built for `export API_VALUE=$(./scripts/arcgis-token.sh)`. |
+| [`ingest.sh`](scripts/ingest.sh) | Regenerates the payloads from the JSON-LD metadata and POSTs them to the provider. Skips datasets already registered; `--force` re-POSTs, `--dry-run` prints. |
+| [`ingest-arcgis-token.sh`](scripts/ingest-arcgis-token.sh) | `arcgis-token.sh` + `ingest.sh` in one call, asking for a long-lived token. Use it to re-ingest from the host. |
+| [`smoke-test.sh`](scripts/smoke-test.sh) | Checks ESRILab connectivity and the token flow, independently of the dataspace. |
+| [`gaia.sh`](scripts/gaia.sh) | GAIA-X credential flow helpers. |
+| [`lib.sh`](scripts/lib.sh) | Shared helpers: default URLs, logging, `curl_raw`/`curl_checked`, `load_arcgis_env`. Sourced by the rest. |
+
+All scripts read their default URLs from `lib.sh` and accept overrides from the environment:
 
 ```bash
 AUTHORITY_URL=http://127.0.0.1:1500 \
 CONSUMER_URL=http://127.0.0.1:1100 \
 PROVIDER_URL=http://127.0.0.1:1200 \
-bash scripts/mini-onboarding.sh
+./scripts/mini-onboarding.sh
 ```
 
-### 3 — Map Viewer
+---
 
-**Development** (hot-reload, no Docker):
+## Deploying by hand
+
+The stacks live in [`deployment/mini/`](deployment/mini/), one Compose file per role:
 
 ```bash
-# Terminal 1 — FastAPI backend
+export API_VALUE=$(./scripts/arcgis-token.sh)
+docker compose -f deployment/mini/docker-compose.mini.heimdall.yaml   up -d --wait
+docker compose -f deployment/mini/docker-compose.mini.provider.yaml   up -d
+docker compose -f deployment/mini/docker-compose.mini.consumer.yaml   up -d
+docker compose -f deployment/mini/docker-compose.mini.map-viewer.yaml up -d --build
+./scripts/mini-onboarding.sh
+```
+
+Notes on the ordering:
+
+- **`API_VALUE` is required** by the provider file, which carries the one-shot
+  `metadata-ingestion` service. It waits for the provider on its own (up to 4 minutes), so
+  no extra sequencing is needed. To start the connector without ingesting, use
+  `up -d provider`; to ingest from the host instead, use `scripts/ingest.sh`.
+- **The map viewer needs `--build`**: Vite bakes `VITE_ARCGIS_BASE_URL` into the bundle at
+  build time, so a plain `up` keeps serving the old one after a pull. Docker's layer cache
+  makes it a no-op when the frontend hasn't changed.
+- **Wait for the agents before onboarding.** They expose no healthcheck, so Compose reports
+  them up the moment the process starts — a few seconds before the router is listening.
+  `deploy-mini.sh` polls for this.
+
+### Wallets
+
+Each role runs its own [**Fafnir**](https://github.com/EunomiaUPM/fafnir-wallet) wallet
+inside its own Compose file — there is no external wallet to start beforehand. Every stack
+brings up a `*-fafnir-setup` one-shot job that runs the wallet migrations against the role's
+Postgres, then a `*-fafnir-wallet` service listening on `7001` inside the Compose network
+(not published to the host) behind a `/readiness` healthcheck. The agent and Heimdall only
+start once their wallet reports healthy. The address is configured in
+`static/config/<role>/mini/*.yaml` under `wallet_config`.
+
+Database and wallet credentials live in `vault/<role>/secrets/*.example` and are mounted
+read-only into the containers.
+
+### Map viewer in development
+
+Hot-reload, no Docker:
+
+```bash
+# Terminal 1 — FastAPI backend (reads the repo-root .env)
 cd services/map-viewer
-cp .env.example .env          # fill in ArcGIS credentials
 uvicorn main:app --reload --port 8000
 
 # Terminal 2 — Vite dev server
@@ -142,14 +217,6 @@ cp .env.example .env.development.local   # set VITE_AUTH_MODE and VITE_ARCGIS_BA
 npm install
 npm run dev
 ```
-
-**Docker** (pre-built bundle served by FastAPI):
-
-```bash
-docker compose -f deployment/mini/docker-compose.mini.map-viewer.yaml up --build
-```
-
-The viewer is available at `http://localhost:8000`.
 
 ---
 
@@ -188,7 +255,7 @@ Use the smoke test script to check that the ESRILab server is reachable and the 
 bash scripts/smoke-test.sh
 ```
 
-Credentials are read from `services/map-viewer/.env`. Any variable already exported in the shell takes precedence.
+Credentials are read from the repo-root `.env`. Any variable already exported in the shell takes precedence.
 
 ---
 
@@ -209,7 +276,7 @@ Switching modes in the sidebar remounts the ArcGIS MapView cleanly, preventing s
 
 ### Map Viewer environment
 
-Backend (`services/map-viewer/.env`):
+Backend (repo-root `.env`, from `.env.example`):
 
 | Variable                  | Description                                                                                                         |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------- |

@@ -1,6 +1,7 @@
 AUTHORITY_URL="${AUTHORITY_URL:-http://127.0.0.1:1500}"
 CONSUMER_URL="${CONSUMER_URL:-http://127.0.0.1:1100}"
 PROVIDER_URL="${PROVIDER_URL:-http://127.0.0.1:1200}"
+MAP_VIEWER_URL="${MAP_VIEWER_URL:-http://127.0.0.1:8000}"
 
 DOCKER_AUTHORITY_URL="${DOCKER_AUTHORITY_URL:-http://host.docker.internal:1500}"
 DOCKER_CONSUMER_URL="${DOCKER_CONSUMER_URL:-http://host.docker.internal:1100}"
@@ -14,13 +15,13 @@ log_info()    { echo -e "\033[33m$1\033[0m" >&2; }
 # ---------------------------------------------------------------------------
 # ArcGIS environment
 # ---------------------------------------------------------------------------
-# Loads services/map-viewer/.env and applies the ARCGIS_* defaults.
+# Loads the repo-root .env and applies the ARCGIS_* defaults.
 # Variables already exported in the shell take precedence over the file.
 load_arcgis_env() {
     local lib_dir repo_root env_file key value
     lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     repo_root="$(cd "${lib_dir}/.." && pwd)"
-    env_file="${repo_root}/services/map-viewer/.env"
+    env_file="${repo_root}/.env"
 
     if [[ -f "${env_file}" ]]; then
         while IFS='=' read -r key value; do

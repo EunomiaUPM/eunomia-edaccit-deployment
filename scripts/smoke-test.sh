@@ -4,7 +4,7 @@
 # 1. Generates a token via the ESRILab portal.
 # 2. Queries the FeatureServer to confirm the layer is accessible.
 #
-# Credentials are loaded from services/map-viewer/.env.
+# Credentials are loaded from the repo-root .env.
 # Any variable already exported in the shell takes precedence over the file.
 #
 # Usage:

@@ -2,7 +2,7 @@
 # ingest-arcgis-token.sh — fetch an ArcGIS token and run the full ingestion pipeline
 # ====================================================================================
 # 1. Fetches a token via scripts/arcgis-token.sh (credentials come from
-#    services/map-viewer/.env; any variable already exported in the shell
+#    the repo-root .env; any variable already exported in the shell
 #    takes precedence over the file).
 # 2. Runs the full ingest pipeline (convert_metadata → convert_connectors →
 #    populate_catalog) passing the token as --api-value so every connector

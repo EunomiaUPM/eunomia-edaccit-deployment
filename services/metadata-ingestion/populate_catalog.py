@@ -24,10 +24,15 @@ Payload files are loaded from two directories (configurable via CLI):
   --catalog-payloads   default: <repo>/services/metadata-ingestion/catalog-payloads/
   --connector-payloads default: <repo>/services/metadata-ingestion/connector-payloads/
 
+Datasets are matched by dctTitle against what the provider already holds, so
+re-running against a populated catalog is a no-op instead of a duplication.
+Pass --force to POST everything again regardless.
+
 Usage:
     ./populate_catalog.py
     ./populate_catalog.py --provider-url http://my-host:1200
     ./populate_catalog.py --dry-run          # print payloads, do not call the API
+    ./populate_catalog.py --force            # re-POST even if already present
 """
 
 import argparse
@@ -128,6 +133,36 @@ def api_post(client: httpx.Client, path: str, payload: dict, dry_run: bool) -> d
     resp = client.post(path, json=payload)
     resp.raise_for_status()
     return resp.json()
+
+
+def api_list(client: httpx.Client, path: str, dry_run: bool) -> list:
+    """GET a collection, tolerating a provider that has none of it yet."""
+    if dry_run:
+        print(f"    [dry-run] GET {path}")
+        return []
+    resp = client.get(path)
+    if resp.status_code == 404:
+        return []
+    resp.raise_for_status()
+    body = resp.json()
+    return body if isinstance(body, list) else []
+
+
+def template_fingerprint(tpl: dict) -> str:
+    """Identity of a connector template, ignoring server-assigned fields.
+
+    The payload carries no name — the provider mints a urn per POST — so the
+    only way to recognise a template we already registered is its content.
+    """
+    params = sorted(
+        (p.get("name"), p.get("paramType"), bool(p.get("required")))
+        for p in tpl.get("parameters", [])
+    )
+    return json.dumps(
+        [tpl.get("authentication"), tpl.get("interaction"), params],
+        sort_keys=True,
+        ensure_ascii=False,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -239,6 +274,11 @@ def main() -> None:
         help="Print all resolved payloads without calling the API",
     )
     parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Register every payload again, even if the provider already has it",
+    )
+    parser.add_argument(
         "--api-value",
         default=os.environ.get("API_VALUE"),
         metavar="SECRET",
@@ -276,6 +316,34 @@ def main() -> None:
         data_service_id = svc_resp["id"]
         print(f"    data_service_id   = {data_service_id}")
 
+        # --- Skip what the provider already holds ---------------------------
+        # Datasets are created, never upserted, so without this guard every
+        # `docker compose up` would clone the whole catalog.
+        pending = groups
+        if not args.force:
+            existing = {
+                d.get("dctTitle")
+                for d in api_list(client, "/api/v1/catalog-agent/datasets", args.dry_run)
+                if d.get("dctTitle")
+            }
+            if existing:
+                pending = {
+                    ds_id: g
+                    for ds_id, g in groups.items()
+                    if g.dataset is None
+                    or json.loads(g.dataset.read_text(encoding="utf-8")).get("dctTitle")
+                    not in existing
+                }
+                skipped = len(groups) - len(pending)
+                if skipped:
+                    print(f"\n==> {skipped} dataset(s) already registered — skipping")
+
+        if not pending:
+            print(f"\n{'=' * 60}")
+            print("  Catalog already up to date. Nothing to do.")
+            print(f"{'=' * 60}")
+            return
+
         # --- Shared connector template (registered once) --------------------
         shared_tpl_path = args.connector_payloads / _SHARED_TEMPLATE_FILE
         if not shared_tpl_path.exists():
@@ -283,14 +351,33 @@ def main() -> None:
             print("Run convert_connectors.py first.", file=sys.stderr)
             sys.exit(1)
 
-        print(f"\n==> Registering shared connector template ({_SHARED_TEMPLATE_FILE})...")
         tpl_payload = json.loads(shared_tpl_path.read_text(encoding="utf-8"))
-        tpl_resp = api_post(client, "/api/v1/connector/templates", tpl_payload, args.dry_run)
-        tpl_name: str = tpl_resp["name"]
-        tpl_version: str = tpl_resp["version"]
+        reused = None
+        if not args.force:
+            wanted = template_fingerprint(tpl_payload)
+            reused = next(
+                (
+                    t
+                    for t in api_list(client, "/api/v1/connector/templates", args.dry_run)
+                    if template_fingerprint(t) == wanted
+                ),
+                None,
+            )
+
+        if reused is not None:
+            tpl_name: str = reused["name"]
+            tpl_version: str = reused["version"]
+            print(f"\n==> Reusing shared connector template ({_SHARED_TEMPLATE_FILE})")
+        else:
+            print(f"\n==> Registering shared connector template ({_SHARED_TEMPLATE_FILE})...")
+            tpl_resp = api_post(
+                client, "/api/v1/connector/templates", tpl_payload, args.dry_run
+            )
+            tpl_name = tpl_resp["name"]
+            tpl_version = tpl_resp["version"]
         print(f"    template_name     = {tpl_name}  v{tpl_version}")
 
-        for dataset_id, group in sorted(groups.items()):
+        for dataset_id, group in sorted(pending.items()):
             process_dataset(
                 dataset_id,
                 group,
