@@ -142,6 +142,7 @@ you already have.
 | Script | What it does |
 | ------ | ------------ |
 | [`deploy-mini.sh`](scripts/deploy-mini.sh) | **Start here.** Token → all four stacks → onboarding. Idempotent; also the update path. `--no-map-viewer`, `--no-onboarding`. |
+| [`teardown-mini.sh`](scripts/teardown-mini.sh) | **The inverse of `deploy-mini.sh`.** Removes every container, network, volume and the generated identities in `vault/`, then checks the ports are free. Asks for confirmation; `--dry-run`, `--yes`, `--images`, `--keep-identities`. |
 | [`mini-onboarding.sh`](scripts/mini-onboarding.sh) | Onboarding only: links wallets, then runs the two scripts below. Safe to re-run. |
 | [`register-with-authority.sh`](scripts/register-with-authority.sh) | Gets one participant a `DataSpaceParticipant` credential from Heimdall. Needs `PARTICIPANT_URL`; `PARTICIPANT_NICK` labels the logs. Skips if already held. |
 | [`authenticate-participants.sh`](scripts/authenticate-participants.sh) | Runs the GNAP handshake that mints the consumer's mate token for the provider. Skips if already authenticated. |
@@ -151,6 +152,17 @@ you already have.
 | [`smoke-test.sh`](scripts/smoke-test.sh) | Checks ESRILab connectivity and the token flow, independently of the dataspace. |
 | [`gaia.sh`](scripts/gaia.sh) | GAIA-X credential flow helpers. |
 | [`lib.sh`](scripts/lib.sh) | Shared helpers: default URLs, logging, `curl_raw`/`curl_checked`, `load_arcgis_env`. Sourced by the rest. |
+
+### Windows
+
+The scripts above are bash and shell out to `jq`, `curl`, `lsof` and Python, none of which ship with Windows. [`scripts-win/`](scripts-win/) is a PowerShell port of all of them for the Windows host, needing only Docker Desktop:
+
+```bat
+scripts-win\deploy-mini.bat
+scripts-win\teardown-mini.bat
+```
+
+Use the `.bat` launchers: Windows Server refuses to run `.ps1` files by default (`ExecutionPolicy` is `Restricted`) and each launcher bypasses that for the one script it starts. See [`scripts-win/README.md`](scripts-win/README.md) for the full mapping and the one behavioural difference (`ingest.ps1` drives the ingestion container instead of the host Python pipeline).
 
 All scripts read their default URLs from `lib.sh` and accept overrides from the environment:
 
@@ -246,6 +258,29 @@ http://localhost:1100/dataplane/proxy/urn:dataplane-transfer:<uuid>
 ```
 
 Open the Map Viewer at `http://localhost:8000`, switch the sidebar toggle to **EUNOMIA**, paste the URL, and click **Conectar**. The SDK will route all layer requests through the Consumer's transfer endpoint — the ArcGIS token is injected by the Provider Agent and never reaches the browser.
+
+### Tearing everything down
+
+`teardown-mini.sh` reverses `deploy-mini.sh` completely — containers, networks, volumes, and the generated identity material — so the next deploy starts from nothing:
+
+```bash
+./scripts/teardown-mini.sh              # asks for confirmation
+./scripts/teardown-mini.sh --dry-run    # show exactly what would be removed
+./scripts/teardown-mini.sh --yes        # no prompt, for automation
+```
+
+What makes this a real reset rather than a restart is `vault/`. The agents' DIDs, keys and wallet state live there through a bind mount, **not** in a Docker volume, so `docker compose down -v` leaves them behind and a redeploy silently reuses the old identities. The script wipes only the generated files: `vault/` also holds committed `.example` files the deployment needs to boot.
+
+After it runs, the agents come back with **new DIDs**, the catalog is empty, and every past agreement is gone. Redeploying needs a working ArcGIS token, so check the credentials in `.env` before wiping.
+
+| Flag | Effect |
+| ---- | ------ |
+| `--dry-run` | Print what would be removed, touch nothing. |
+| `--yes` | Skip the confirmation prompt. |
+| `--images` | Also remove the images built for map-viewer, metadata-ingestion and e2e. |
+| `--keep-identities` | Leave `vault/` alone — stops everything but the agents keep their DIDs. |
+
+It does not touch the repo-root `.env` or the committed payloads under `services/metadata-ingestion/`.
 
 ### Automated end-to-end test
 

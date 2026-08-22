@@ -32,7 +32,10 @@ dist/
 .DS_Store
 
 # Scripts
+# Local scratch .ps1 files are ignored, but the ported Windows scripts under
+# scripts-win/ are the deliverable for the Windows host and must be committed.
 *.ps1
+!scripts-win/**/*.ps1
 
 # Scratch / notas locales
 /a
